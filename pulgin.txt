@@ -1,0 +1,15 @@
+facbook Plugin
+    -npm install --save react-native-fbsdk
+    -react-native link react-native-fbsdk
+
+Google Plugin 
+    -npm i react-native-google-signin
+    -react-native link react-native-google-signin
+
+    use this link if found any error:https://github.com/react-native-community/google-signin/blob/HEAD/docs/android-guide.md
+
+
+
+generate hashkey=keytool -exportcert -alias ChatApp -keystore debug.keystore | openssl sha1 -binary | openssl base64
+
+
