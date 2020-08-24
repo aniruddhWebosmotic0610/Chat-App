@@ -33,6 +33,7 @@ export function DrawerContent(props, route) {
             retrieveData();
         }
     })
+
     const retrieveData = async () => {
         try {
             const valueString = await AsyncStorage.getItem('user');
@@ -40,9 +41,6 @@ export function DrawerContent(props, route) {
             if (value) {
                 setData(value)
                 setRetrieve(true)
-                // console.log('value', userdata);
-                console.log('image', userdata.photoURL)
-
             }
         } catch (error) {
             // console.log(error);
@@ -116,10 +114,10 @@ export function DrawerContent(props, route) {
                     label="Sign Out"
                     onPress={() => {
                         firebase.auth().signOut().then(function () {
-                            console.log("Sign-out successful.");
+                            // console.log("Sign-out successful.");
                             props.navigation.navigate("login")
                         }).catch(function (error) {
-                            console.log("An error happened when signing out");
+                            // console.log("An error happened when signing out");
                         });
                     }}
                     labelStyle={{ color: 'black', fontWeight: "bold" }}

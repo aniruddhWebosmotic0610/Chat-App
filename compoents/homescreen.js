@@ -23,6 +23,7 @@ import firebase from '@react-native-firebase/app'
 import database from '@react-native-firebase/database'
 import auth from '@react-native-firebase/auth'
 import firebaseSvc from './firebaseSDK';
+import _, { orderBy } from 'lodash'
 
 const screenWidth = Math.round(Dimensions.get('window').width);
 
@@ -35,7 +36,9 @@ export default class HomeView extends Component {
             uid: '',
             uname: '',
             uemail: '',
-            isLoading: false
+            uphoto: '',
+            isLoading: false,
+            chatData: []
         }
 
     }
@@ -49,24 +52,26 @@ export default class HomeView extends Component {
         this.setState({
             uid: user.uid,
             uname: user.displayName,
-            uemail: user.email
+            uemail: user.email,
+            uphoto: user.photoURL
         })
     }
+
     User_data = () => {
         this.setState({ isLoading: true })
         firebaseSvc.usersData().then((solve) => {
-            // console.log('solve', solve);
+            console.log("usdata", solve);
             this.setState({ auth_data: solve })
             this.setState({ isLoading: false })
+
         }).catch((fail) => {
             console.log('not getting data')
         })
     }
+
     render() {
         let Data = this.state.auth_data
         let User = Data.map((u_data, i) => {
-            // console.log(this.state.uid);
-            // console.log(u_data.uid);
             if (u_data.uid !== this.state.uid) {
                 return (
                     <View style={styles.container}>
@@ -74,18 +79,30 @@ export default class HomeView extends Component {
                             uemail: this.state.uemail,
                             uid: this.state.uid,
                             uname: this.state.uname,
+                            uphoto: this.state.uphoto,
                             fid: u_data.uid,
                             fname: u_data.name,
-                            femail: u_data.email
+                            femail: u_data.email,
+                            fphoto: u_data.photoURL
                         })}>
                             <View style={{ width: 60 }}>
-                                <Avatar.Image
-                                    source={{
-                                        uri: 'https://www.whatsappprofiledpimages.com/wp-content/uploads/2018/11/whatsapp-profile-iopic-lif-300x300.gif'
-                                    }}
-                                    size={55}
-                                    style={{ alignSelf: "center" }}
-                                />
+                                {u_data.photoURL ?
+                                    <Avatar.Image
+                                        source={{
+                                            uri: u_data.photoURL
+                                        }}
+                                        size={55}
+                                        style={{ alignSelf: "center" }}
+                                    />
+                                    :
+                                    <Avatar.Image
+                                        source={{
+                                            uri: 'https://www.whatsappprofiledpimages.com/wp-content/uploads/2018/11/whatsapp-profile-iopic-lif-300x300.gif'
+                                        }}
+                                        size={55}
+                                        style={{ alignSelf: "center" }}
+                                    />
+                                }
                                 <View style={{ flexDirection: "row" }}>
                                     <Text numberOfLines={1} style={{ flex: 1, textAlign: "center" }} key={u_data.name}> {u_data.name}</Text>
                                     {/* <Text style={styles.carname} key={u_data.email}> {u_data.email}</Text> */}

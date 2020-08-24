@@ -130,7 +130,8 @@ export default function LoginScreen({ navigation }) {
             uid: res.user.uid,
             email: res.user.email,
             name: res.user.displayName,
-            emailVerified: res.user.emailVerified
+            emailVerified: res.user.emailVerified,
+            photoURL: res.user.photoURL
           }).then(function () {
             console.log("Document successfully written!");
             setLoading(false)

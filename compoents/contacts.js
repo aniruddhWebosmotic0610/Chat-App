@@ -20,6 +20,7 @@ export default class ContactScreen extends Component {
             uid: '',
             uname: '',
             uemail: '',
+            uphoto: '',
             search: '',
             isLoading: false
         }
@@ -34,7 +35,8 @@ export default class ContactScreen extends Component {
         this.setState({
             uid: user.uid,
             uname: user.displayName,
-            uemail: user.email
+            uemail: user.email,
+            uphoto: user.photoURL
         })
     }
     User_data = () => {
@@ -83,19 +85,31 @@ export default class ContactScreen extends Component {
                         uemail: this.state.uemail,
                         uid: this.state.uid,
                         uname: this.state.uname,
+                        uphoto: this.state.uphoto,
                         fid: item.uid,
                         fname: item.name,
-                        femail: item.email
+                        femail: item.email,
+                        fphoto: item.photoURL
                     })}>
                         <View style={styles.container}>
                             <View style={{ justifyContent: "center" }}>
-                                <Avatar.Image
-                                    source={{
-                                        uri: 'https://www.whatsappprofiledpimages.com/wp-content/uploads/2018/11/whatsapp-profile-iopic-lif-300x300.gif'
-                                    }}
-                                    size={55}
-                                    style={{ alignSelf: "flex-start", flex: 1 }}
-                                />
+                                {item.photoURL ?
+                                    <Avatar.Image
+                                        source={{
+                                            uri: item.photoURL
+                                        }}
+                                        size={55}
+                                        style={{ alignSelf: "center" }}
+                                    />
+                                    :
+                                    <Avatar.Image
+                                        source={{
+                                            uri: 'https://www.whatsappprofiledpimages.com/wp-content/uploads/2018/11/whatsapp-profile-iopic-lif-300x300.gif'
+                                        }}
+                                        size={55}
+                                        style={{ alignSelf: "center" }}
+                                    />
+                                }
                             </View>
                             <View style={{ justifyContent: "center", flex: 1 }}>
                                 <Text style={{ fontSize: 16 }} key={item.name}> {item.name}</Text>

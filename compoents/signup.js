@@ -101,7 +101,8 @@ class SignupScreen extends Component {
                                 uid: pass.user.uid,
                                 email: pass.user.email,
                                 name: update.displayName,
-                                emailVerified: pass.user.emailVerified
+                                emailVerified: pass.user.emailVerified,
+                                photoURL: update.photoURL
                             }).then(function () {
                                 this.setState({ isLoading: false })
                             })

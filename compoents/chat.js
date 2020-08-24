@@ -84,6 +84,8 @@ export default class ChatScreen extends Component {
         let uid = this.props.route.params.uid
         let uname = this.props.route.params.uname
         let uemail = this.props.route.params.uemail
+        let uphoto = this.props.route.params.uphoto
+        let fphoto = this.props.route.params.fphoto
         // alert(uid)
         this.setState({
             f_email: femail,
@@ -92,6 +94,8 @@ export default class ChatScreen extends Component {
             u_id: uid,
             u_name: uname,
             u_email: uemail,
+            u_photo: uphoto,
+            f_photo: fphoto
         })
         this.getChatdata();
     }
@@ -142,23 +146,57 @@ export default class ChatScreen extends Component {
                                 <Text style={{ fontSize: 16, color: "#000" }}> {c_data.text}</Text>
                                 <Text style={styles.time}> {this.converDateTime(c_data.created_at._seconds)}</Text>
                             </View>
-                            <Avatar.Image
+                            {this.state.u_photo ?
+                                <Avatar.Image
+                                    source={{
+                                        uri: this.state.u_photo
+                                    }}
+                                    size={55}
+                                    style={{ alignSelf: "center" }}
+                                />
+                                :
+                                <Avatar.Image
+                                    source={{
+                                        uri: 'https://www.whatsappprofiledpimages.com/wp-content/uploads/2018/11/whatsapp-profile-iopic-lif-300x300.gif'
+                                    }}
+                                    size={55}
+                                    style={{ alignSelf: "center" }}
+                                />
+                            }
+                            {/* <Avatar.Image
                                 source={{
                                     uri: 'https://www.whatsappprofiledpimages.com/wp-content/uploads/2018/11/whatsapp-profile-iopic-lif-300x300.gif'
                                 }}
                                 size={55}
-                            />
+                            /> */}
                         </View>
                     )
                 } else {
                     return (
                         <View style={{ flexDirection: "row", margin: 5 }} key={i}>
-                            <Avatar.Image
+                            {/* <Avatar.Image
                                 source={{
                                     uri: 'https://www.whatsappprofiledpimages.com/wp-content/uploads/2018/11/whatsapp-profile-iopic-lif-300x300.gif'
                                 }}
                                 size={55}
-                            />
+                            /> */}
+                            {this.state.f_photo ?
+                                <Avatar.Image
+                                    source={{
+                                        uri: this.state.f_photo
+                                    }}
+                                    size={55}
+                                    style={{ alignSelf: "center" }}
+                                />
+                                :
+                                <Avatar.Image
+                                    source={{
+                                        uri: 'https://www.whatsappprofiledpimages.com/wp-content/uploads/2018/11/whatsapp-profile-iopic-lif-300x300.gif'
+                                    }}
+                                    size={55}
+                                    style={{ alignSelf: "center" }}
+                                />
+                            }
                             <View style={{
                                 backgroundColor: "#dedede",
                                 borderRadius: 4,
