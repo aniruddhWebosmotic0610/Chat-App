@@ -162,23 +162,12 @@ export default class ChatScreen extends Component {
                                     style={{ alignSelf: "center" }}
                                 />
                             }
-                            {/* <Avatar.Image
-                                source={{
-                                    uri: 'https://www.whatsappprofiledpimages.com/wp-content/uploads/2018/11/whatsapp-profile-iopic-lif-300x300.gif'
-                                }}
-                                size={55}
-                            /> */}
                         </View>
                     )
                 } else {
                     return (
                         <View style={{ flexDirection: "row", margin: 5 }} key={i}>
-                            {/* <Avatar.Image
-                                source={{
-                                    uri: 'https://www.whatsappprofiledpimages.com/wp-content/uploads/2018/11/whatsapp-profile-iopic-lif-300x300.gif'
-                                }}
-                                size={55}
-                            /> */}
+
                             {this.state.f_photo ?
                                 <Avatar.Image
                                     source={{

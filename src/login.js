@@ -20,6 +20,8 @@ import auth from '@react-native-firebase/auth';
 import firebase from '@react-native-firebase/app';
 import firestore from '@react-native-firebase/firestore'
 import { ActivityIndicator } from 'react-native-paper';
+import firebaseSvc from './firebaseSDK';
+
 
 export default function LoginScreen({ navigation }) {
   const [loggedIn, setloggedIn] = useState(false);
@@ -35,21 +37,7 @@ export default function LoginScreen({ navigation }) {
       webClientId: '1013171964319-ru5voe2f9cjq8tq8655b4jcljm5kogds.apps.googleusercontent.com', // client ID of type WEB for your server (needed to verify user ID and offline access)
       offlineAccess: true, // if you want to access Google API on behalf of the user FROM YOUR SERVER
     });
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyChR_fE4fEdk62uwuGyLCQjIQygJ6YafQM",
-      authDomain: "chat-app-492b6.firebaseapp.com",
-      databaseURL: "https://chat-app-492b6.firebaseio.com",
-      projectId: "chat-app-492b6",
-      storageBucket: "chat-app-492b6.appspot.com",
-      messagingSenderId: "1013171964319",
-      appId: "1:1013171964319:web:6d3b3c84d7e26878b0d5aa",
-      measurementId: "G-CJX7EB9QPL"
-    };
-
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
+    firebaseSvc.configuration();
     setLoading(false)
 
   });
@@ -59,12 +47,8 @@ export default function LoginScreen({ navigation }) {
 
     setisSubmit(isSubmit => true)
     if (Email == '' || !validate(Email)) {
-      // Alert.alert("Email is required.")
-
     }
     else if (Password == '') {
-      // Alert.alert("Password is required.")
-
     }
     else {
       try {
@@ -99,10 +83,8 @@ export default function LoginScreen({ navigation }) {
     try {
       setLoading(true)
       await GoogleSignin.hasPlayServices();
-      // const {accessToken, idToken} = await GoogleSignin.signIn();
       const userInfo = await GoogleSignin.signIn();
       setuserInfo({ userInfo });
-      // setloggedIn(true);
       if (userInfo.idToken) {
         const credential = auth.GoogleAuthProvider.credential(
           userInfo.idToken,

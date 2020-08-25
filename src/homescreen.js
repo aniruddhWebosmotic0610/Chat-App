@@ -44,7 +44,7 @@ export default class HomeView extends Component {
     }
     componentDidMount = () => {
         this._retrieveData()
-        this.User_data()
+        this.user_data()
     }
     _retrieveData = async () => {
         let user = auth().currentUser;
@@ -57,7 +57,7 @@ export default class HomeView extends Component {
         })
     }
 
-    User_data = () => {
+    user_data = () => {
         this.setState({ isLoading: true })
         firebaseSvc.usersData().then((solve) => {
             this.setState({ auth_data: solve })
@@ -104,7 +104,6 @@ export default class HomeView extends Component {
                                 }
                                 <View style={{ flexDirection: "row" }}>
                                     <Text numberOfLines={1} style={{ flex: 1, textAlign: "center" }} key={u_data.name}> {u_data.name}</Text>
-                                    {/* <Text style={styles.carname} key={u_data.email}> {u_data.email}</Text> */}
                                 </View>
                             </View>
                         </TouchableOpacity>

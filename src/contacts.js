@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Text, View, SafeAreaView, ScrollView, TouchableOpacity, StyleSheet, Dimensions, FlatList, List } from 'react-native'
+import { Text, View, SafeAreaView, ScrollView, TouchableOpacity, StyleSheet, Dimensions, List, FlatList } from 'react-native'
 import { Header } from './header'
 import { Avatar, Searchbar, ActivityIndicator } from 'react-native-paper'
 import auth from '@react-native-firebase/auth'
@@ -9,6 +9,7 @@ import Styles from './styles/styles';
 
 
 const screenWidth = Math.round(Dimensions.get('window').width);
+const screenHeight = Math.round(Dimensions.get('window').height);
 
 
 export default class ContactScreen extends Component {
@@ -27,7 +28,7 @@ export default class ContactScreen extends Component {
     }
     componentDidMount = () => {
         this._retrieveData()
-        this.User_data()
+        this.user_data()
     }
     _retrieveData = async () => {
         let user = auth().currentUser;
@@ -39,7 +40,7 @@ export default class ContactScreen extends Component {
             uphoto: user.photoURL
         })
     }
-    User_data = () => {
+    user_data = () => {
         this.setState({ isLoading: true })
         firebaseSvc.usersData().then((solve) => {
             console.log('solve', solve);
@@ -76,7 +77,6 @@ export default class ContactScreen extends Component {
         }
     }
     render() {
-
         const renderItem = ({ item }) => (
             <View style={styles.item}>
                 {
@@ -119,7 +119,6 @@ export default class ContactScreen extends Component {
                                 <Icon
                                     name="chevron-right"
                                     color={'gray'}
-
                                     size={30}
                                     style={{ margin: 10, fontWeight: 'bold' }}
                                 />
@@ -132,20 +131,26 @@ export default class ContactScreen extends Component {
 
 
         return (
-            <SafeAreaView>
+            <SafeAreaView style={{ flex: 1 }}>
                 {this.state.isLoading &&
                     <ActivityIndicator animating={true} style={Styles.loader} />
                 }
                 <Header title={"Contacts"} />
 
-                <Searchbar placeholder="Type here..." onChangeText={this.searchText}
-                    value={this.state.search} />
-                <FlatList
-                    data={this.state.auth_data}
-                    renderItem={renderItem}
-                    style={{ backgroundColor: 'white' }}
-                    keyExtractor={item => item.email}
-                />
+                <View>
+                    <Searchbar placeholder="Type here..." onChangeText={this.searchText}
+                        value={this.state.search} />
+
+                    <FlatList
+                        data={this.state.auth_data}
+                        renderItem={renderItem}
+                        style={{ backgroundColor: 'white' }}
+                        keyExtractor={(item, index) => index}
+                        contentContainerStyle={{                         
+                            paddingBottom:120,
+                        }}
+                    />
+                </View>
             </SafeAreaView >
         )
     }
@@ -160,7 +165,7 @@ const styles = StyleSheet.create({
     },
     carname: { color: '#010000', fontSize: 12, },
     item: {
-        color: "#D3D3D3"
+        color: "#D3D3D3",
     }
 
 })

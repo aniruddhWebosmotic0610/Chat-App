@@ -25,6 +25,7 @@ import { ActivityIndicator } from 'react-native-paper';
 import ImagePicker from 'react-native-image-picker';
 
 import RNFetchBlob from 'rn-fetch-blob'
+import firebaseSvc from './firebaseSDK';
 
 
 class SignupScreen extends Component {
@@ -41,21 +42,7 @@ class SignupScreen extends Component {
             avatarSource: '',
             firebase_url: ''
         };
-        const firebaseConfig = {
-            apiKey: "AIzaSyChR_fE4fEdk62uwuGyLCQjIQygJ6YafQM",
-            authDomain: "chat-app-492b6.firebaseapp.com",
-            databaseURL: "https://chat-app-492b6.firebaseio.com",
-            projectId: "chat-app-492b6",
-            storageBucket: "chat-app-492b6.appspot.com",
-            messagingSenderId: "1013171964319",
-            appId: "1:1013171964319:web:6d3b3c84d7e26878b0d5aa",
-            measurementId: "G-CJX7EB9QPL",
-
-        };
-
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+        firebaseSvc.configuration();
 
     }
 
