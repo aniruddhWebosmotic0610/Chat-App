@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
@@ -9,10 +9,17 @@ import LoginScreen from './src/login';
 import SignupScreen from './src/signup';
 import ChatScreen from './src/chat';
 import { StatusBar } from 'react-native';
+import SplashScreen from 'react-native-splash-screen'
+
+
 
 const Stack = createStackNavigator();
 
 export default function App({ navigation }) {
+
+  useEffect(() => {
+    SplashScreen.hide();
+  }, [])
   console.disableYellowBox = true;
   return (
     <NavigationContainer>

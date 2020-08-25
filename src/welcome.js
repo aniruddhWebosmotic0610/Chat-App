@@ -13,7 +13,6 @@ import { NavigationContainer } from '@react-navigation/native';
 
 import Styles from './styles/styles';
 
-// const navigation = useNavigationState();
 
 
 class WelcomeScreen extends Component {
@@ -23,12 +22,6 @@ class WelcomeScreen extends Component {
         this.state = {
             thename: 'somename'
         };
-    }
-    handleClick = () => {
-        Alert.alert(
-            "Button clicked",
-        );
-
     }
 
     render() {
@@ -80,7 +73,7 @@ export default WelcomeScreen
 const style = StyleSheet.create({
     content: {
         margin: 5,
-        marginBottom:20
+        marginBottom: 20
     },
     welcomeText: {
         color: "#007AFF",
@@ -91,10 +84,15 @@ const style = StyleSheet.create({
         padding: 5,
     },
     buttonSignup: {
+        // shadowColor: 'rgba(0,0,0, .4)', // IOS
+        // shadowOffset: { height: 1, width: 1 }, // IOS
+        // shadowOpacity: 1, // IOS
+        // shadowRadius: 1, //IOS
         alignItems: "center",
         backgroundColor: "#fff",
         padding: 10,
         width: 250,
+        elevation: 5,
         borderRadius: 50,
         color: '#fff',
         alignSelf: 'center',

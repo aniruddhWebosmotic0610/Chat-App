@@ -13,6 +13,8 @@ import java.util.List;
 import com.facebook.reactnative.androidsdk.FBSDKPackage;
 import co.apptailor.googlesignin.RNGoogleSigninPackage; 
 import com.oblador.vectoricons.VectorIconsPackage;
+import org.devio.rn.splashscreen.SplashScreenReactPackage;
+
 
 
 public class MainApplication extends Application implements ReactApplication {

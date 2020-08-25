@@ -161,7 +161,7 @@ class SignupScreen extends Component {
             }
         });
     }
-    
+
     // email validation using regex
     validate = (text) => {
         let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
@@ -279,6 +279,7 @@ const style = StyleSheet.create({
         backgroundColor: "#007AFF",
         padding: 10,
         width: 250,
+        elevation:5,
         borderRadius: 50,
         color: '#fff',
         alignSelf: 'center',

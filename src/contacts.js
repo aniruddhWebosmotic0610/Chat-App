@@ -28,7 +28,6 @@ export default class ContactScreen extends Component {
     // retrive current user data from firebase using auth 
     _retrieveData = () => {
         let user = auth().currentUser;
-        console.log('user', user);
         this.setState({
             uid: user.uid,
             uname: user.displayName,
@@ -40,19 +39,17 @@ export default class ContactScreen extends Component {
     user_data = () => {
         this.setState({ isLoading: true })
         firebaseSvc.usersData().then((solve) => {
-            console.log('solve', solve);
             this.setState({
                 auth_data: solve,
                 search_data: solve,
                 isLoading: false
             })
         }).catch((fail) => {
-            console.log('not getting data')
+            // console.log('not getting data')
         })
     }
     // search contacct list 
     searchText = (search) => {
-        console.log('search', search);
         this.setState({ search })
         this.setState({ isLoading: true })
         if (search == '') {
@@ -65,7 +62,6 @@ export default class ContactScreen extends Component {
             let data = this.state.search_data.filter((item) => {
                 return (item.name.toLowerCase().match(search) || item.email.toLowerCase().match(search))
             })
-            console.log('searchdata', data);
             this.setState({
                 auth_data: data,
                 isLoading: false

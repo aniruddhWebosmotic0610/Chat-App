@@ -30,6 +30,7 @@ export default StyleSheet.create({
         backgroundColor: "#007AFF",
         padding: 10,
         width: 250,
+        elevation:5,
         borderRadius: 50,
         color: '#fff',
         alignSelf: 'center'

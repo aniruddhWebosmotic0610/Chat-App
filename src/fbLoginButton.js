@@ -36,7 +36,7 @@ export default class FBLoginButton extends Component {
           }
           onLogoutFinished={() => alert("User logged out")}/> */}
         <TouchableOpacity style={style.btn} onPress={this.handleFacebookLogin}>
-          <Text style={style.TextStyle}>Login With Facebook </Text>
+          <Text style={style.TextStyle}>Login with Facebook </Text>
         </TouchableOpacity>
       </View>
     );
@@ -49,6 +49,7 @@ const style = StyleSheet.create({
     borderRadius: 30,
     paddingTop: 10,
     paddingBottom: 10,
+    elevation:5,
     paddingLeft: 20,
     paddingRight: 20
 

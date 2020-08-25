@@ -30,7 +30,7 @@ class FirebaseSvc {
     if (!firebase.apps.length) {
       firebase.initializeApp(config);
     } else {
-      console.log("firebase apps already running...")
+      // console.log("firebase apps already running...")
     }
   }
   // get userlist from firebase
@@ -48,9 +48,9 @@ class FirebaseSvc {
 
   onLogout = user => {
     firebase.auth().signOut().then(function () {
-      console.log("Sign-out successful.");
+      // console.log("Sign-out successful.");
     }).catch(function (error) {
-      console.log("An error happened when signing out");
+      // console.log("An error happened when signing out");
     });
   }
 
@@ -78,7 +78,6 @@ class FirebaseSvc {
           timestamp,
           user
         };
-        console.log('message', message);
         cData.push(message)
         resolve(cData)
       })

@@ -94,7 +94,7 @@ export default function LoginScreen({ navigation }) {
           userInfo.accessToken,
         );
         await auth().signInWithCredential(credential).then(res => {
-          console.log('googleuser', res.user);
+          // console.log('googleuser', res.user);
           firestore().collection("chatie_user").doc(res.user.uid).set({
             uid: res.user.uid,
             email: res.user.email,
@@ -102,7 +102,7 @@ export default function LoginScreen({ navigation }) {
             emailVerified: res.user.emailVerified,
             photoURL: res.user.photoURL
           }).then(function () {
-            console.log("Document successfully written!");
+            // console.log("Document successfully written!");
             setLoading(false)
             navigation.navigate('Drawer', { user: JSON.stringify(res.user) })
           })
@@ -213,6 +213,7 @@ const style = StyleSheet.create({
     backgroundColor: "#007AFF",
     padding: 10,
     width: 250,
+    elevation:5,
     borderRadius: 50,
     color: '#fff',
     alignSelf: 'center',
