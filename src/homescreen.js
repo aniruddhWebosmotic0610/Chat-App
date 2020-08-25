@@ -157,16 +157,13 @@ const styles = StyleSheet.create({
         margin: 5,
     },
     search_box: {
-        //height: 40,
         paddingTop: 10,
-        //paddingBottom: 5,
         borderBottomColor: '#fff',
         color: '#000000',
         fontSize: 15,
         opacity: 1,
         width: screenWidth - 200,
         borderBottomWidth: StyleSheet.hairlineWidth,
-        //fontFamily:"Poppins"
     },
     home_padding: {
         padding: 10,
@@ -182,7 +179,6 @@ const styles = StyleSheet.create({
     },
     forwidth_left: {
         width: '30%',
-        //paddingBottom:30
     },
     forwidth_right:
     {
@@ -205,13 +201,9 @@ const styles = StyleSheet.create({
         width: '100%',
         flexDirection: 'row',
         borderBottomColor: '#e3e3e1',
-        // borderBottomWidth:2 ,
         paddingTop: 0,
         paddingBottom: 0,
 
-        //marginTop: 3,
-        //width: screenWidth / 2 - 30,
-        //marginRight: 20		
     },
     item: {
         padding: 10,
