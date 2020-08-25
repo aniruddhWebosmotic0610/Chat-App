@@ -48,7 +48,7 @@ export default class HomeView extends Component {
     }
     // retrive current user data from firebase using auth 
     _retrieveData = () => {
-        let user = auth().currentUser;
+        const user = auth().currentUser;
         this.setState({
             uid: user.uid,
             uname: user.displayName,
@@ -69,8 +69,8 @@ export default class HomeView extends Component {
     }
 
     render() {
-        let Data = this.state.auth_data
-        let User = Data.map((u_data, i) => {
+        const Data = this.state.auth_data
+        const User = Data.map((u_data, i) => {
             if (u_data.uid !== this.state.uid) {
                 return (
                     <View style={styles.container}>

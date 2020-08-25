@@ -27,7 +27,7 @@ export default class ContactScreen extends Component {
     }
     // retrive current user data from firebase using auth 
     _retrieveData = () => {
-        let user = auth().currentUser;
+        const user = auth().currentUser;
         this.setState({
             uid: user.uid,
             uname: user.displayName,
@@ -59,7 +59,7 @@ export default class ContactScreen extends Component {
             })
         }
         else {
-            let data = this.state.search_data.filter((item) => {
+            const data = this.state.search_data.filter((item) => {
                 return (item.name.toLowerCase().match(search) || item.email.toLowerCase().match(search))
             })
             this.setState({
