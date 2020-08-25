@@ -15,9 +15,7 @@ import {
     AsyncStorage,
     Keyboard
 } from 'react-native';
-import { Header } from './header'
 import firebaseSvc from './firebaseSDK';
-import firestore from '@react-native-firebase/firestore'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Avatar, ActivityIndicator } from 'react-native-paper';
 import { orderBy } from 'lodash';
@@ -29,9 +27,7 @@ const screenWidth = Math.round(Dimensions.get('window').width);
 const screenHeight = Math.round(Dimensions.get('window').height);
 
 export default class ChatScreen extends Component {
-    unsubscribe = null;
     scrollView;
-
     constructor(props) {
         super(props);
         this.state = {
@@ -48,23 +44,44 @@ export default class ChatScreen extends Component {
         }
 
     }
-    componentDidMount = async () => {
+
+    componentDidMount = () => {
         this.retrieveData();
     }
+
+    // retrive previous Screen data
+    retrieveData = () => {
+        this.setState({
+            f_email: this.props.route.params.femail,
+            f_id: this.props.route.params.fid,
+            f_name: this.props.route.params.fname,
+            u_id: this.props.route.params.uid,
+            u_name: this.props.route.params.uname,
+            u_email: this.props.route.params.uemail,
+            u_photo: this.props.route.params.uphoto,
+            f_photo: this.props.route.params.fphoto
+        })
+        this.getChatdata();
+    }
+    
+    //  function is use to get chats from firestore
     getChatdata = () => {
         this.setState({ isLoading: true })
-        firebaseSvc.fetchMessages().then((solve) => {
-            const data = orderBy(solve, ['created_at'], ['asc'])
-            this.setState({ chatData: data })
-            this.setState({ isLoading: false })
-        }).then(() => {
-            let data = this.state.chatData
-            this.setState({ isLoading: false })
-        }).catch((fail) => {
-            console.log(fail)
-            this.setState({ isLoading: false })
-        })
+        firebaseSvc.fetchMessages()
+            .then((solve) => {
+                const data = orderBy(solve, ['created_at'], ['asc'])
+                this.setState({ chatData: data })
+                this.setState({ isLoading: false })
+            }).then(() => {
+                let data = this.state.chatData
+                this.setState({ isLoading: false })
+            }).catch((fail) => {
+                console.log(fail)
+                this.setState({ isLoading: false })
+            })
     }
+
+    //  function is use to get chats from firestore
     getChatdataAftersend = () => {
         firebaseSvc.fetchMessages().then((solve) => {
             const data = orderBy(solve, ['created_at'], ['asc'])
@@ -76,28 +93,7 @@ export default class ChatScreen extends Component {
         })
     }
 
-    retrieveData = async () => {
-        let fid = this.props.route.params.fid
-        let fname = this.props.route.params.fname
-        let femail = this.props.route.params.femail
-        let uid = this.props.route.params.uid
-        let uname = this.props.route.params.uname
-        let uemail = this.props.route.params.uemail
-        let uphoto = this.props.route.params.uphoto
-        let fphoto = this.props.route.params.fphoto
-        // alert(uid)
-        this.setState({
-            f_email: femail,
-            f_id: fid,
-            f_name: fname,
-            u_id: uid,
-            u_name: uname,
-            u_email: uemail,
-            u_photo: uphoto,
-            f_photo: fphoto
-        })
-        this.getChatdata();
-    }
+    // send message function to store sent message to firebase 
     onSend = () => {
         this.textInput.clear()
         firebaseSvc.send(
@@ -112,17 +108,11 @@ export default class ChatScreen extends Component {
         Keyboard.dismiss();
         this.getChatdataAftersend()
     }
-
+    // date convert to DD-MMM H:mm A from seaconds
     converDateTime = (given_seconds) => {
         return moment(given_seconds * 1000).format('DD-MMM H:mm A');
     }
-    renderDate = (date) => {
-        return (
-            <Text style={styles.time}>
-                {date}
-            </Text>
-        );
-    }
+
     render() {
         let Data = this.state.chatData
         let chats = Data.map((c_data, i) => {

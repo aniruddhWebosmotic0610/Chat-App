@@ -42,15 +42,17 @@ class SignupScreen extends Component {
             avatarSource: '',
             firebase_url: ''
         };
+        // fetch firebase configuration for inititalize app
         firebaseSvc.configuration();
-
     }
 
     componentDidMount() {
+        // firebase authetication user to signin anonymously to save images in Storage
         auth().signInAnonymously();
     }
 
-    CheckTextInput = async () => {
+    // main function use for custom signup
+    signUp = () => {
         this.setState({
             isSubmit: true
         })
@@ -77,13 +79,16 @@ class SignupScreen extends Component {
 
             try {
                 this.setState({ isLoading: true })
+                // register user in firebase using email and password
                 auth().createUserWithEmailAndPassword(this.state.TextInputEmail, this.state.Password)
                     .then(pass => {
                         const update = {
                             displayName: this.state.TextInputName,
                             photoURL: this.state.firebase_url
                         };
+                        // update user's profile pic and name in firebase
                         auth().currentUser.updateProfile(update).then(function (res) {
+                            // add this user to firestore collection to disply list of users in contacts
                             firestore().collection("chatie_user").doc(pass.user.uid).set({
                                 uid: pass.user.uid,
                                 email: pass.user.email,
@@ -109,8 +114,9 @@ class SignupScreen extends Component {
             }
         }
     };
+
+    // function use to convert local storage uri into file storage and then upload it in firebase Storage
     WriteBase64ToFile = (Base64) => {
-        // var Base64Code = Base64.split("data:image/jpeg;base64,");
         const dirs = RNFetchBlob.fs.dirs;
         let number = Math.random()
         let imageName = "/image" + number + ".png"
@@ -118,6 +124,7 @@ class SignupScreen extends Component {
         RNFetchBlob.fs.writeFile(path, Base64, 'base64').then((res) => {
             const filename = path.substring(path.lastIndexOf('/') + 1);
             const uploadUri = Platform.OS === 'ios' ? path.replace('file://', '') : path;
+            // use firebase Storage to save images which are uploaded
             storage().ref('chat_app').child(filename).putFile(uploadUri).then((res) => {
                 const ref = storage().ref('chat_app/' + imageName);
                 ref.getDownloadURL().then(url => {
@@ -125,15 +132,11 @@ class SignupScreen extends Component {
 
                 })
                     .catch(e => { console.log(e); })
-
             })
-
         });
-
     }
-
-    uploadPic = async () => {
-
+    // function to upload profile picture using Image picker plugin
+    uploadPic = () => {
         const options = {
             title: 'Select Avatar',
             customButtons: [{ name: 'fb', title: 'Choose Photo from Facebook' }],
@@ -141,9 +144,7 @@ class SignupScreen extends Component {
                 skipBackup: true,
                 path: 'images',
             },
-
         };
-
         ImagePicker.showImagePicker(options, (response) => {
             if (response.didCancel) {
                 console.log('User cancelled image picker');
@@ -152,21 +153,16 @@ class SignupScreen extends Component {
             } else if (response.customButton) {
                 console.log('User tapped custom button: ', response.customButton);
             } else {
-
                 const source = { uri: 'data:image/jpeg;base64,' + response.data };
-
                 this.WriteBase64ToFile(response.data);
-
-
                 this.setState({
                     avatarSource: source,
                 });
             }
         });
-
-
     }
-
+    
+    // email validation using regex
     validate = (text) => {
         let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
         if (reg.test(text) === false) {
@@ -177,9 +173,7 @@ class SignupScreen extends Component {
         }
     }
     render() {
-
         return (
-
             <SafeAreaView style={Styles.background}>
                 {this.state.isLoading &&
                     <ActivityIndicator animating={true} style={Styles.loader} />
@@ -246,7 +240,7 @@ class SignupScreen extends Component {
                             <View>
                                 <TouchableOpacity
                                     style={style.buttonSignup}
-                                    onPress={this.CheckTextInput}>
+                                    onPress={this.signUp}>
                                     <Text style={{ color: '#fff', fontWeight: 'bold' }}>Sign UP</Text>
                                 </TouchableOpacity>
                             </View>
@@ -268,24 +262,6 @@ class SignupScreen extends Component {
 }
 export default SignupScreen
 
-// function SampleForm() {
-//     const { register, handleSubmit, control } = useForm();
-//     const onSubmit = data => {
-//         alert(JSON.stringify(data));
-//     };
-
-//     return (
-//         <div className="App">
-//             <form onSubmit={handleSubmit(onSubmit)}>
-//                 <Controller
-//                     name="firstName"
-//                     control={control}
-
-//                 />
-//             </form>
-//         </div>
-//     );
-// }
 
 const style = StyleSheet.create({
     content: {

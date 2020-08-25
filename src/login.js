@@ -32,19 +32,20 @@ export default function LoginScreen({ navigation }) {
   const [Password, setPassword] = useState('');
 
   useEffect(() => {
-    // Update the document title using the browser API
+    //google signin configuration
     GoogleSignin.configure({
       webClientId: '1013171964319-ru5voe2f9cjq8tq8655b4jcljm5kogds.apps.googleusercontent.com', // client ID of type WEB for your server (needed to verify user ID and offline access)
       offlineAccess: true, // if you want to access Google API on behalf of the user FROM YOUR SERVER
     });
+
+    // firebase configuration
     firebaseSvc.configuration();
     setLoading(false)
-
   });
 
 
+  // Use to check validation and for custom login
   function CheckTextInput() {
-
     setisSubmit(isSubmit => true)
     if (Email == '' || !validate(Email)) {
     }
@@ -69,6 +70,7 @@ export default function LoginScreen({ navigation }) {
     }
   };
 
+  // email validation validate using this function
   function validate(text) {
     let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
     if (reg.test(text) === false) {
@@ -79,6 +81,7 @@ export default function LoginScreen({ navigation }) {
     }
   }
 
+  // google login function
   async function _signIn() {
     try {
       setLoading(true)

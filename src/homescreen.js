@@ -46,9 +46,9 @@ export default class HomeView extends Component {
         this._retrieveData()
         this.user_data()
     }
-    _retrieveData = async () => {
+    // retrive current user data from firebase using auth 
+    _retrieveData = () => {
         let user = auth().currentUser;
-        // console.log('user', user);
         this.setState({
             uid: user.uid,
             uname: user.displayName,
@@ -56,7 +56,7 @@ export default class HomeView extends Component {
             uphoto: user.photoURL
         })
     }
-
+    // get all userlist data from firebase
     user_data = () => {
         this.setState({ isLoading: true })
         firebaseSvc.usersData().then((solve) => {

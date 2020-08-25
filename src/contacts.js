@@ -7,11 +7,6 @@ import firebaseSvc from './firebaseSDK';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Styles from './styles/styles';
 
-
-const screenWidth = Math.round(Dimensions.get('window').width);
-const screenHeight = Math.round(Dimensions.get('window').height);
-
-
 export default class ContactScreen extends Component {
     constructor(props) {
         super(props)
@@ -30,7 +25,8 @@ export default class ContactScreen extends Component {
         this._retrieveData()
         this.user_data()
     }
-    _retrieveData = async () => {
+    // retrive current user data from firebase using auth 
+    _retrieveData = () => {
         let user = auth().currentUser;
         console.log('user', user);
         this.setState({
@@ -40,6 +36,7 @@ export default class ContactScreen extends Component {
             uphoto: user.photoURL
         })
     }
+    // get all userlist data from firebase
     user_data = () => {
         this.setState({ isLoading: true })
         firebaseSvc.usersData().then((solve) => {
@@ -53,7 +50,7 @@ export default class ContactScreen extends Component {
             console.log('not getting data')
         })
     }
-
+    // search contacct list 
     searchText = (search) => {
         console.log('search', search);
         this.setState({ search })
@@ -67,7 +64,6 @@ export default class ContactScreen extends Component {
         else {
             let data = this.state.search_data.filter((item) => {
                 return (item.name.toLowerCase().match(search) || item.email.toLowerCase().match(search))
-                // item.email.toLowerCase().match(search)
             })
             console.log('searchdata', data);
             this.setState({
@@ -136,7 +132,6 @@ export default class ContactScreen extends Component {
                     <ActivityIndicator animating={true} style={Styles.loader} />
                 }
                 <Header title={"Contacts"} />
-
                 <View>
                     <Searchbar placeholder="Type here..." onChangeText={this.searchText}
                         value={this.state.search} />
@@ -146,8 +141,8 @@ export default class ContactScreen extends Component {
                         renderItem={renderItem}
                         style={{ backgroundColor: 'white' }}
                         keyExtractor={(item, index) => index}
-                        contentContainerStyle={{                         
-                            paddingBottom:120,
+                        contentContainerStyle={{
+                            paddingBottom: 120,
                         }}
                     />
                 </View>
