@@ -8,7 +8,8 @@ import {
     Image,
     StyleSheet,
     Dimensions,
-    ScrollView
+    ScrollView,
+    FlatList
 } from 'react-native';
 import {
     Avatar, ActivityIndicator
@@ -24,73 +25,138 @@ import database from '@react-native-firebase/database'
 import auth from '@react-native-firebase/auth'
 import firebaseSvc from './firebaseSDK';
 import _, { orderBy } from 'lodash'
+import moment from 'moment';
+import { useIsFocused } from '@react-navigation/native';
+
 
 const screenWidth = Math.round(Dimensions.get('window').width);
+const screenHeight = Math.round(Dimensions.get('window').height);
 
-export default class HomeView extends Component {
 
-    constructor(props) {
-        super(props)
-        this.state = {
-            auth_data: [],
-            uid: '',
-            uname: '',
-            uemail: '',
-            uphoto: '',
-            isLoading: false,
-            chatData: []
-        }
 
-    }
-    componentDidMount = () => {
-        this._retrieveData()
-        this.user_data()
-    }
+export default function HomeView({ props, navigation }) {
+    const [isLoading, setLoading] = useState(true);
+    const [userInfo, setUser] = useState();
+    const [userList, setUserlist] = useState([]);
+    const [chatUserlist, setChatlist] = useState([]);
+    const [retrived, setRetrived] = useState(false);
+
+
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', () => {
+            _retrieveData();
+        });
+        return unsubscribe;
+    }, [navigation])
+
     // retrive current user data from firebase using auth 
-    _retrieveData = () => {
+    function _retrieveData() {
         const user = auth().currentUser;
-        this.setState({
-            uid: user.uid,
-            uname: user.displayName,
-            uemail: user.email,
-            uphoto: user.photoURL
-        })
+        if (user) {
+            setUser({
+                uid: user.uid,
+                uname: user.displayName,
+                uemail: user.email,
+                uphoto: user.photoURL
+            })
+            getChatdata(user.uid)
+        }
+    }
+
+    //get User list of this user's had chat with latest chat user comes top
+    function getChatdata(uid) {
+        if (uid) {
+            firebaseSvc.getLatestMsgs(uid).then((res) => {
+                setChatlist(res)
+                user_data()
+                setRetrived(false)
+
+            }).catch((fail) => {
+                console.log('not getting message data')
+                setRetrived(false)
+            })
+        }
     }
     // get all userlist data from firebase
-    user_data = () => {
-        this.setState({ isLoading: true })
+    function user_data() {
         firebaseSvc.usersData().then((solve) => {
-            this.setState({ auth_data: solve })
-            this.setState({ isLoading: false })
-
+            setUserlist(solve)
+            setLoading(false)
+            setRetrived(true)
+            getChatdata()
         }).catch((fail) => {
+            setLoading(false)
             console.log('not getting data')
         })
     }
 
-    render() {
-        const Data = this.state.auth_data
-        const User = Data.map((u_data, i) => {
-            if (u_data.uid !== this.state.uid) {
-                return (
-                    <View style={styles.container}>
-                        <TouchableOpacity onPress={() => this.props.navigation.navigate('Chat', {
-                            uemail: this.state.uemail,
-                            uid: this.state.uid,
-                            uname: this.state.uname,
-                            uphoto: this.state.uphoto,
-                            fid: u_data.uid,
-                            fname: u_data.name,
-                            femail: u_data.email,
-                            fphoto: u_data.photoURL
-                        })}>
-                            <View style={{ width: 60 }}>
-                                {u_data.photoURL ?
+
+    // date convert to DD-MMM H:mm A from seaconds
+    function convertDateTime(given_seconds) {
+        return moment(given_seconds * 1000).format('H:mm A');
+    }
+
+    const User = userList.map((u_data, i) => {
+        if (u_data.uid !== userInfo.uid) {
+            return (
+                <View style={styles.container}>
+                    <TouchableOpacity onPress={() => navigation.navigate('Chat', {
+                        uid: userInfo.uid,
+                        uname: userInfo.uname,
+                        uphoto: userInfo.uphoto,
+                        fid: u_data.uid,
+                        fname: u_data.name,
+                        fphoto: u_data.photoURL
+                    })}>
+                        <View style={{ width: 60 }}>
+                            {u_data.photoURL ?
+                                <Avatar.Image
+                                    source={{
+                                        uri: u_data.photoURL
+                                    }}
+                                    size={55}
+                                    style={{ alignSelf: "center" }}
+                                />
+                                :
+                                <Avatar.Image
+                                    source={{
+                                        uri: 'https://www.whatsappprofiledpimages.com/wp-content/uploads/2018/11/whatsapp-profile-iopic-lif-300x300.gif'
+                                    }}
+                                    size={55}
+                                    style={{ alignSelf: "center" }}
+                                />
+                            }
+                            <View style={{ flexDirection: "row" }}>
+                                <Text numberOfLines={1} style={{ flex: 1, textAlign: "center", textTransform: "capitalize" }} key={u_data.name}> {u_data.name}</Text>
+                            </View>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+            )
+        }
+    })
+
+    const renderItem = ({ item }) => (
+        <View>
+            <View style={styles.item}>
+                <TouchableOpacity onPress={() => navigation.navigate('Chat', {
+                    uid: userInfo.uid,
+                    uname: userInfo.uname,
+                    uphoto: userInfo.uphoto,
+                    fid: item.from_id,
+                    fname: item.from_name,
+                    fphoto: item.f_photo
+                })}>
+                    {item.text &&
+
+                        <View style={styles.list_container}>
+                            <View style={{ justifyContent: "center", marginRight: 10 }}>
+                                {item.f_photo ?
                                     <Avatar.Image
                                         source={{
-                                            uri: u_data.photoURL
+                                            uri: item.f_photo
                                         }}
-                                        size={55}
+                                        size={65}
                                         style={{ alignSelf: "center" }}
                                     />
                                     :
@@ -98,38 +164,58 @@ export default class HomeView extends Component {
                                         source={{
                                             uri: 'https://www.whatsappprofiledpimages.com/wp-content/uploads/2018/11/whatsapp-profile-iopic-lif-300x300.gif'
                                         }}
-                                        size={55}
+                                        size={65}
                                         style={{ alignSelf: "center" }}
                                     />
                                 }
-                                <View style={{ flexDirection: "row" }}>
-                                    <Text numberOfLines={1} style={{ flex: 1, textAlign: "center" }} key={u_data.name}> {u_data.name}</Text>
+                            </View>
+                            <View style={{ justifyContent: "center", flex: 1 }}>
+                                <Text style={{
+                                    fontSize: 16,
+                                    fontWeight: "bold",
+                                    textTransform: "capitalize",
+                                }} key={item.name}>
+                                    {item.from_name}
+                                </Text>
+                                <View style={{ flexDirection: "row" }} key={item.text}>
+                                    <Text numberOfLines={1} style={styles.carname}> {item.text}</Text>
+                                    <Text> {convertDateTime(item.timestamp)}</Text>
                                 </View>
                             </View>
-                        </TouchableOpacity>
-                    </View>
+                        </View>
+                    }
+                </TouchableOpacity>
+            </View>
+        </View>
+    );
 
 
-                )
+    return (
+
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFAFA" }}>
+            <Header title={"Home"} />
+            {isLoading ?
+                <ActivityIndicator animating={true} style={Styles.loader} />
+                :
+                <View>
+                    <ScrollView horizontal={true} style={{ backgroundColor: "#fff", elevation: 5 }}>
+                        {User}
+                    </ScrollView>
+                    <FlatList
+                        data={chatUserlist}
+                        renderItem={renderItem}
+                        style={{ backgroundColor: "#FFFAFA" }}
+                        keyExtractor={(item, index) => index}
+                        contentContainerStyle={{
+                            paddingBottom: 180,
+                        }} />
+
+
+                </View>
             }
-        })
+        </SafeAreaView>
+    )
 
-        return (
-
-            <SafeAreaView>
-                <Header title={"Home"} />
-                {this.state.isLoading ?
-                    <ActivityIndicator animating={true} style={Styles.loader} />
-                    :
-                    <View>
-                        <ScrollView horizontal={true} style={{ backgroundColor: "#fff" }}>
-                            {User}
-                        </ScrollView>
-                    </View>
-                }
-            </SafeAreaView>
-        )
-    }
 }
 
 const styles = StyleSheet.create({
@@ -139,75 +225,19 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         marginLeft: 20
     },
-    backarrow: {
-        marginTop: 10,
-        paddingBottom: 10,
+    list_container: {
+        flexDirection: "row",
+        borderBottomWidth: 1,
+        borderColor: "#D3D3D3",
+        padding: 10
     },
-    nav_icon: {
-        width: 40,
-        height: 40,
-    },
-    search_header: {
-        width: screenWidth - 100,
-        flexDirection: 'row',
-    },
-    search_icon: {
-        width: 30,
-        height: 30,
-        margin: 5,
-    },
-    search_box: {
-        paddingTop: 10,
-        borderBottomColor: '#fff',
-        color: '#000000',
-        fontSize: 15,
-        opacity: 1,
-        width: screenWidth - 200,
-        borderBottomWidth: StyleSheet.hairlineWidth,
-    },
-    home_padding: {
-        padding: 10,
-        backgroundColor: "#ffffff",
+    carname: {
+        color: '#010000',
+        fontSize: 14,
         flex: 1
     },
-    list_img: {
-        width: '100%',
-        height: 115,
-        marginRight: 4,
-        borderTopLeftRadius: 8,
-        borderTopRightRadius: 8,
-    },
-    forwidth_left: {
-        width: '30%',
-    },
-    forwidth_right:
-    {
-        width: '50%'
-    },
-    price: {
-        color: '#0b85bd',
-        fontSize: 14,
-        flexWrap: "nowrap"
-    },
-    carname: { color: '#010000', fontSize: 10, },
-    list_img: {
-        width: '100%',
-        height: 115,
-        marginRight: 4,
-        borderTopLeftRadius: 8,
-        borderTopRightRadius: 8,
-    },
-    list: {
-        width: '100%',
-        flexDirection: 'row',
-        borderBottomColor: '#e3e3e1',
-        paddingTop: 0,
-        paddingBottom: 0,
-
-    },
     item: {
-        padding: 10,
-        fontSize: 18,
-        height: 44,
-    },
+        color: "#D3D3D3",
+
+    }
 })

@@ -15,7 +15,6 @@ export default class ContactScreen extends Component {
             search_data: [],
             uid: '',
             uname: '',
-            uemail: '',
             uphoto: '',
             search: '',
             isLoading: false
@@ -25,6 +24,7 @@ export default class ContactScreen extends Component {
         this._retrieveData()
         this.user_data()
     }
+    
     // retrive current user data from firebase using auth 
     _retrieveData = () => {
         const user = auth().currentUser;
@@ -35,6 +35,7 @@ export default class ContactScreen extends Component {
             uphoto: user.photoURL
         })
     }
+
     // get all userlist data from firebase
     user_data = () => {
         this.setState({ isLoading: true })
@@ -74,13 +75,11 @@ export default class ContactScreen extends Component {
                 {
                     item.uid !== this.state.uid &&
                     <TouchableOpacity onPress={() => this.props.navigation.navigate('Chat', {
-                        uemail: this.state.uemail,
                         uid: this.state.uid,
                         uname: this.state.uname,
                         uphoto: this.state.uphoto,
                         fid: item.uid,
                         fname: item.name,
-                        femail: item.email,
                         fphoto: item.photoURL
                     })}>
                         <View style={styles.container}>

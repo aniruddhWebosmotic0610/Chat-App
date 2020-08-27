@@ -46,6 +46,18 @@ class FirebaseSvc {
     })
   }
 
+  getLatestMsgs = (uid) => {
+    let result = []
+    return new Promise((resolve, reject) => {
+      var docRef = firestore().collection("chat_messages").doc(uid).collection('latest_msg')
+      docRef.orderBy('timestamp', 'desc').get().then(function (querySnapshot) {
+        querySnapshot.forEach(function (doc) {
+          result.push(doc.data())
+        }, resolve(result))
+      })
+    })
+  }
+
   onLogout = user => {
     firebase.auth().signOut().then(function () {
       // console.log("Sign-out successful.");
@@ -85,25 +97,76 @@ class FirebaseSvc {
   }
 
   // for fetch messages from firestore
-  fetchMessages = () => {
+  fetchMessages = (fid, uid) => {
     let data = [];
     return new Promise((resolve, reject) => {
       var docRef = firebase.firestore().collection("chat_messages")
       docRef.get().then(function (querySnapshot) {
         querySnapshot.forEach(function (doc) {
+          // console.log(doc.id);
           data.push(doc.data())
         }, resolve(data))
       })
+      // console.log(fid);
+      // console.log(uid);
+      // const ref = database().ref('/chat_messages')
+      // ref.child(fid).child(uid).on('value', (snapshot) => {
+      //   data = [];
+      //   var temp = snapshot.val();
+      //   for (var tempkey in temp) {
+      //     data.push(temp[tempkey]);
+      //   }
+      //   console.log('temp', data);
+      //   resolve(data)
+      // })
     })
   }
 
   // to store message input to firestore 
-  send = async (fid, femail, fname, text, uid, uemail, uname) => {
-    await firestore().collection('chat_messages').add({
-      text,
+  send = async (fid, fname, fphoto, text, uid, uname, uphoto) => {
+    // await firestore().collection('chat_messages').add({
+    //   text,
+    //   user_id: uid,
+    //   from_id: fid,
+    //   created_at: new Date()
+    // })
+    const ref = await database().ref('/chat_messages')
+    ref.child(fid).child(uid).push({
       user_id: uid,
+      user_name: uname,
       from_id: fid,
-      created_at: new Date()
+      from_name: fname,
+      text: text,
+      created_at: firebase.database.ServerValue.TIMESTAMP
+    }).then(() => {
+      ref.child(uid).child(fid).push({
+        user_id: uid,
+        user_name: uname,
+        from_id: fid,
+        from_name: fname,
+        text: text,
+        created_at: firebase.database.ServerValue.TIMESTAMP
+      })
+    })
+    await firestore().collection('chat_messages').doc(uid).collection('latest_msg').doc(fid).set({
+      user_id: uid,
+      user_name: uname,
+      u_photo: uphoto,
+      from_id: fid,
+      from_name: fname,
+      f_photo: fphoto,
+      text: text,
+      timestamp: new Date().getTime()
+    })
+    await firestore().collection('chat_messages').doc(fid).collection('latest_msg').doc(uid).set({
+      user_id: fid,
+      user_name: fname,
+      u_photo: fphoto,
+      from_id: uid,
+      from_name: uname,
+      f_photo: uphoto,
+      text: text,
+      timestamp: new Date().getTime()
     })
   }
 
