@@ -20,13 +20,11 @@ import Styles from './styles/styles';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
 import { Header } from './header';
-import firebase from '@react-native-firebase/app'
 import database from '@react-native-firebase/database'
 import auth from '@react-native-firebase/auth'
 import firebaseSvc from './firebaseSDK';
 import _, { orderBy } from 'lodash'
 import moment from 'moment';
-import { useIsFocused } from '@react-navigation/native';
 
 
 const screenWidth = Math.round(Dimensions.get('window').width);
@@ -42,10 +40,8 @@ export default function HomeView({ props, navigation }) {
     const [retrived, setRetrived] = useState(false);
 
     useEffect(() => {
-        // const unsubscribe = navigation.addListener('focus', () => {
         _retrieveData();
-        // });
-        // return unsubscribe;
+
     }, [])
 
     // retrive current user data from firebase using auth 
@@ -71,24 +67,6 @@ export default function HomeView({ props, navigation }) {
         let chatData = [];
         setLoading(false)
         if (uid && userData) {
-            // userData.forEach(item => {
-            // console.log("ids", item.uid);
-            // if (item.uid !== uid) {
-            // firebaseSvc.getLatestMsgs(uid)
-            //     .then((res) => {
-            //         console.log('result', res);
-            //         // chatData.push(res)
-            //         // let tempdata = orderBy(chatData, ["timestamp"], ['desc'])
-            //         setChatlist(res)
-            //         setRetrived(false)
-            //         setLoading(false)
-
-            //     }).catch((fail) => {
-            //         console.log('not getting message data')
-            //         setRetrived(false)
-            //     })
-            // }
-            // });
             const ref = database().ref('/chat_messages')
             ref.child(uid).on('value', (snapshot) => {
                 let data = []
@@ -168,7 +146,7 @@ export default function HomeView({ props, navigation }) {
         }
     })
 
-    const renderItem = ({ item ,index}) => (
+    const renderItem = ({ item, index }) => (
         <View>
             <View style={styles.item}>
                 <TouchableOpacity onPress={() => navigation.navigate('Chat', {
@@ -277,3 +255,9 @@ const styles = StyleSheet.create({
 
     }
 })
+
+// Extra code for re-use if required
+
+        // const unsubscribe = navigation.addListener('focus', () => {
+        // });
+        // return unsubscribe;
