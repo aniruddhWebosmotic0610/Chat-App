@@ -17,6 +17,7 @@ import { orderBy } from 'lodash';
 import moment from 'moment';
 import Styles from './styles/styles';
 import database from '@react-native-firebase/database'
+import firestore from '@react-native-firebase/firestore'
 
 const screenWidth = Math.round(Dimensions.get('window').width);
 const screenHeight = Math.round(Dimensions.get('window').height);
@@ -35,7 +36,6 @@ export default class ChatScreen extends Component {
             messages: [],
             isLoading: true
         }
-
     }
 
     componentDidMount = () => {
@@ -55,7 +55,7 @@ export default class ChatScreen extends Component {
         this.getChatdata();
     }
 
-    //  function is use to get chats from firestore
+    //  function is use to get chats from  database
     getChatdata = () => {
         this.setState({ isLoading: true })
         if (this.props.route.params.uid && this.props.route.params.fid) {
@@ -64,7 +64,8 @@ export default class ChatScreen extends Component {
                 let data = []
                 let temp = snapshot.val();
                 for (let tempkey in temp) {
-                    data.push(temp[tempkey]);
+                    if (tempkey !== "recent_message")
+                        data.push(temp[tempkey]);
                 }
                 let tempdata = orderBy(data, ["created_at"], ['asc'])
                 this.setState({
@@ -75,12 +76,10 @@ export default class ChatScreen extends Component {
         }
     }
 
-
     //  function is use to get chats from firestore
     getChatdataAftersend = () => {
         firebaseSvc.fetchMessages(this.props.route.params.fid, this.props.route.params.uid).then((solve) => {
             const data = orderBy(solve, ['timestamp'], ['asc'])
-            console.log('data', data);
             this.setState({ chatData: data })
         }).then(() => {
             let data = this.state.chatData
@@ -107,12 +106,11 @@ export default class ChatScreen extends Component {
         Keyboard.dismiss();
     }
     // date convert to DD-MMM H:mm A from seaconds
-    converDateTime = (given_seconds) => {
-        return moment(given_seconds).format('DD-MMM H:mm');
+    convertDateTime = (given_seconds) => {
+        return moment(given_seconds).format('DD-MMM hh:mm A');
     }
 
     render() {
-        // let Data = this.state.chatData
         let chats = this.state.chatData.map((c_data, i) => {
             if (this.state.f_id == c_data.from_id && this.state.u_id == c_data.user_id || this.state.f_id == c_data.user_id && this.state.u_id == c_data.from_id) {
                 if (c_data.from_id == this.state.f_id) {
@@ -140,7 +138,7 @@ export default class ChatScreen extends Component {
                             <View style={[styles.triangle, styles.arrowRight]} />
                             <View style={styles.rightBox}>
                                 <Text style={{ fontSize: 16, color: "#000" }}> {c_data.text}</Text>
-                                <Text style={styles.time}> {this.converDateTime(c_data.created_at)}</Text>
+                                <Text style={styles.time}> {this.convertDateTime(c_data.created_at)}</Text>
                             </View>
                         </View>
                     )
@@ -168,7 +166,7 @@ export default class ChatScreen extends Component {
 
                             <View style={styles.leftBox}>
                                 <Text style={{ fontSize: 16, color: "#000" }}> {c_data.text} </Text>
-                                <Text style={styles.time}> {this.converDateTime(c_data.created_at)}</Text>
+                                <Text style={styles.time}> {this.convertDateTime(c_data.created_at)}</Text>
                             </View>
                         </View>
                     )
@@ -177,11 +175,12 @@ export default class ChatScreen extends Component {
         })
 
         return (
-            <View style={styles.container}>
-                {this.state.isLoading &&
+            <View style={styles.container} >
+                {
+                    this.state.isLoading &&
                     <ActivityIndicator animating={true} style={Styles.loader} />
                 }
-                <View style={{ backgroundColor: '#007AFF', height: 55, width: "100%", flexDirection: 'row' }}>
+                < View style={{ backgroundColor: '#007AFF', height: 55, width: "100%", flexDirection: 'row' }} >
                     <TouchableOpacity onPress={() => this.props.navigation.goBack()}>
                         <Icon
                             name="arrow-left"
@@ -239,7 +238,6 @@ const styles = StyleSheet.create({
         padding: 10,
         maxWidth: screenWidth - 150,
         borderRadius: 15,
-        flex: 1
     },
     leftBox: {
         backgroundColor: "#dedede",

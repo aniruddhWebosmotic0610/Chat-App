@@ -46,15 +46,23 @@ class FirebaseSvc {
     })
   }
 
+  //to get live latest messages 
   getLatestMsgs = (uid) => {
-    let result = []
+    let result = [];
     return new Promise((resolve, reject) => {
       var docRef = firestore().collection("chat_messages").doc(uid).collection('latest_msg')
-      docRef.orderBy('timestamp', 'desc').get().then(function (querySnapshot) {
-        querySnapshot.forEach(function (doc) {
-          result.push(doc.data())
-        }, resolve(result))
-      })
+      docRef.orderBy('timestamp', 'desc').get().then(function (querySnapshot) {    // |
+        querySnapshot.forEach(function (doc) {                                       // |this data is use to get data once of latest_msg collection
+          result.push(doc.data())                                                  // |
+        }, resolve(result))                                                        // |
+      })                                                                           // |
+      // docRef.onSnapshot(function (doc) {
+      //   // includeMetadataChanges: true
+      //   if (doc.data()) {
+      //     result = doc.data();
+      //     resolve(result)
+      //   }
+      // });
     })
   }
 
@@ -65,14 +73,6 @@ class FirebaseSvc {
       // console.log("An error happened when signing out");
     });
   }
-
-  // get uid() {
-  //   return (firebase.auth().currentUser || {}).uid;
-  // }
-
-  // get ref() {
-  //   return firebase.firestore().ref('chat_messages');
-  // }
 
   refOn = () => {
     return new Promise((resolve, reject) => {
@@ -147,27 +147,50 @@ class FirebaseSvc {
         text: text,
         created_at: firebase.database.ServerValue.TIMESTAMP
       })
+    }).then(() => {
+      ref.child(uid).child(fid).child('recent_message').set({
+        user_id: uid,
+        user_name: uname,
+        u_photo: uphoto,
+        from_id: fid,
+        from_name: fname,
+        f_photo: fphoto,
+        text: text,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      })
+    }).then(() => {
+      ref.child(fid).child(uid).child('recent_message').set({
+        user_id: fid,
+        user_name: fname,
+        u_photo: fphoto,
+        from_id: uid,
+        from_name: uname,
+        f_photo: uphoto,
+        text: text,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      })
     })
-    await firestore().collection('chat_messages').doc(uid).collection('latest_msg').doc(fid).set({
-      user_id: uid,
-      user_name: uname,
-      u_photo: uphoto,
-      from_id: fid,
-      from_name: fname,
-      f_photo: fphoto,
-      text: text,
-      timestamp: new Date().getTime()
-    })
-    await firestore().collection('chat_messages').doc(fid).collection('latest_msg').doc(uid).set({
-      user_id: fid,
-      user_name: fname,
-      u_photo: fphoto,
-      from_id: uid,
-      from_name: uname,
-      f_photo: uphoto,
-      text: text,
-      timestamp: new Date().getTime()
-    })
+    // await firestore().collection('chat_messages').doc(uid).collection('latest_msg').doc(fid).set({
+    //   user_id: uid,
+    //   user_name: uname,
+    //   u_photo: uphoto,
+    //   from_id: fid,
+    //   from_name: fname,
+    //   f_photo: fphoto,
+    //   text: text,
+    //   timestamp: new Date().getTime()
+    // }).then(() => {
+    //   await firestore().collection('chat_messages').doc(fid).collection('latest_msg').doc(uid).set({
+    //     user_id: fid,
+    //     user_name: fname,
+    //     u_photo: fphoto,
+    //     from_id: uid,
+    //     from_name: uname,
+    //     f_photo: uphoto,
+    //     text: text,
+    //     timestamp: new Date().getTime()
+    //   })
+    // })
   }
 
 }

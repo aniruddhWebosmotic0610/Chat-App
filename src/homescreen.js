@@ -41,13 +41,12 @@ export default function HomeView({ props, navigation }) {
     const [chatUserlist, setChatlist] = useState([]);
     const [retrived, setRetrived] = useState(false);
 
-
     useEffect(() => {
-        const unsubscribe = navigation.addListener('focus', () => {
-            _retrieveData();
-        });
-        return unsubscribe;
-    }, [navigation])
+        // const unsubscribe = navigation.addListener('focus', () => {
+        _retrieveData();
+        // });
+        // return unsubscribe;
+    }, [])
 
     // retrive current user data from firebase using auth 
     function _retrieveData() {
@@ -59,41 +58,74 @@ export default function HomeView({ props, navigation }) {
                 uemail: user.email,
                 uphoto: user.photoURL
             })
-            getChatdata(user.uid)
+            user_data().then((data) => {
+                if (data) {
+                    getChatdata(user.uid, data)
+                }
+            })
         }
     }
 
     //get User list of this user's had chat with latest chat user comes top
-    function getChatdata(uid) {
-        if (uid) {
-            firebaseSvc.getLatestMsgs(uid).then((res) => {
-                setChatlist(res)
-                user_data()
-                setRetrived(false)
+    function getChatdata(uid, userData) {
+        let chatData = [];
+        setLoading(false)
+        if (uid && userData) {
+            // userData.forEach(item => {
+            // console.log("ids", item.uid);
+            // if (item.uid !== uid) {
+            // firebaseSvc.getLatestMsgs(uid)
+            //     .then((res) => {
+            //         console.log('result', res);
+            //         // chatData.push(res)
+            //         // let tempdata = orderBy(chatData, ["timestamp"], ['desc'])
+            //         setChatlist(res)
+            //         setRetrived(false)
+            //         setLoading(false)
 
-            }).catch((fail) => {
-                console.log('not getting message data')
+            //     }).catch((fail) => {
+            //         console.log('not getting message data')
+            //         setRetrived(false)
+            //     })
+            // }
+            // });
+            const ref = database().ref('/chat_messages')
+            ref.child(uid).on('value', (snapshot) => {
+                let data = []
+                let temp = snapshot.val();
+                for (let tempkey in temp) {
+                    if (temp[tempkey]['recent_message']) {
+                        data.push(temp[tempkey]['recent_message']);
+                    }
+                }
+                let tempdata = orderBy(data, ["timestamp"], ['desc'])
+                setChatlist(tempdata)
                 setRetrived(false)
+                setLoading(false)
             })
+
         }
     }
     // get all userlist data from firebase
     function user_data() {
-        firebaseSvc.usersData().then((solve) => {
-            setUserlist(solve)
-            setLoading(false)
-            setRetrived(true)
-            getChatdata()
-        }).catch((fail) => {
-            setLoading(false)
-            console.log('not getting data')
+        return new Promise((resolve) => {
+            firebaseSvc.usersData().then((solve) => {
+                setUserlist(solve)
+                setLoading(false)
+                setRetrived(true)
+                resolve(solve)
+            }).catch((fail) => {
+                setLoading(false)
+                console.log('not getting data')
+            })
+
         })
     }
 
 
     // date convert to DD-MMM H:mm A from seaconds
     function convertDateTime(given_seconds) {
-        return moment(given_seconds * 1000).format('H:mm A');
+        return moment(given_seconds * 1000).format('hh:mm A');
     }
 
     const User = userList.map((u_data, i) => {
@@ -127,7 +159,7 @@ export default function HomeView({ props, navigation }) {
                                 />
                             }
                             <View style={{ flexDirection: "row" }}>
-                                <Text numberOfLines={1} style={{ flex: 1, textAlign: "center", textTransform: "capitalize" }} key={u_data.name}> {u_data.name}</Text>
+                                <Text numberOfLines={1} style={{ flex: 1, textAlign: "center", textTransform: "capitalize" }} key={i}> {u_data.name}</Text>
                             </View>
                         </View>
                     </TouchableOpacity>
@@ -136,7 +168,7 @@ export default function HomeView({ props, navigation }) {
         }
     })
 
-    const renderItem = ({ item }) => (
+    const renderItem = ({ item ,index}) => (
         <View>
             <View style={styles.item}>
                 <TouchableOpacity onPress={() => navigation.navigate('Chat', {
@@ -174,12 +206,12 @@ export default function HomeView({ props, navigation }) {
                                     fontSize: 16,
                                     fontWeight: "bold",
                                     textTransform: "capitalize",
-                                }} key={item.name}>
+                                }} key={index}>
                                     {item.from_name}
                                 </Text>
-                                <View style={{ flexDirection: "row" }} key={item.text}>
-                                    <Text numberOfLines={1} style={styles.carname}> {item.text}</Text>
-                                    <Text> {convertDateTime(item.timestamp)}</Text>
+                                <View style={{ flexDirection: "row" }} key={index}>
+                                    <Text numberOfLines={1} style={styles.text}> {item.text}</Text>
+                                    <Text style={styles.time}> {convertDateTime(item.timestamp)}</Text>
                                 </View>
                             </View>
                         </View>
@@ -231,10 +263,14 @@ const styles = StyleSheet.create({
         borderColor: "#D3D3D3",
         padding: 10
     },
-    carname: {
-        color: '#010000',
+    text: {
+        color: '#808080',
         fontSize: 14,
         flex: 1
+    },
+    time: {
+        color: '#808080',
+        fontSize: 14,
     },
     item: {
         color: "#D3D3D3",
