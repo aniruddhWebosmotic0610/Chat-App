@@ -17,24 +17,22 @@ import { orderBy } from 'lodash';
 import moment from 'moment';
 import Styles from './styles/styles';
 import database from '@react-native-firebase/database'
-import firestore from '@react-native-firebase/firestore'
 
 const screenWidth = Math.round(Dimensions.get('window').width);
 const screenHeight = Math.round(Dimensions.get('window').height);
 
-export default class ChatScreen extends Component {
+export default class GroupchatScreen extends Component {
     scrollView;
     constructor(props) {
         super(props);
         this.state = {
-            f_id: '',
-            f_name: '',
             u_id: '',
             u_name: '',
             text: '',
             chatData: [],
             messages: [],
-            isLoading: true
+            isLoading: false,
+            group_id: ''
         }
     }
 
@@ -43,31 +41,30 @@ export default class ChatScreen extends Component {
     }
 
     // retrive previous Screen data
-    retrieveData = async () => {
+    retrieveData = () => {
         this.setState({
-            f_id: this.props.route.params.fid,
-            f_name: this.props.route.params.fname,
             u_id: this.props.route.params.uid,
             u_name: this.props.route.params.uname,
             u_photo: this.props.route.params.uphoto,
-            f_photo: this.props.route.params.fphoto
+            group_id: this.props.route.params.group_id,
+            group_name: this.props.route.params.group_name,
+
         })
         this.getChatdata();
     }
 
     //  function is use to get chats from  database
-    getChatdata = () => {
-        this.setState({ isLoading: true })
-        if (this.props.route.params.uid && this.props.route.params.fid) {
-            const ref = database().ref('/chat_messages')
-            ref.child(this.props.route.params.fid).child(this.props.route.params.uid).on('value', (snapshot) => {
+    getChatdata = async () => {
+        if (this.props.route.params.group_id) {
+            const ref = await database().ref('/group_messages')
+            ref.child(this.props.route.params.group_id).on('value', (snapshot) => {
                 let data = []
                 let temp = snapshot.val();
+                console.log('temp', temp);
                 for (let tempkey in temp) {
-                    if (tempkey !== "recent_message")
-                        data.push(temp[tempkey]);
+                    data.push(temp[tempkey]);
                 }
-                let tempdata = orderBy(data, ["created_at"], ['asc'])
+                let tempdata = orderBy(data, ["timestamp"], ['asc'])
                 this.setState({
                     isLoading: false,
                     chatData: tempdata
@@ -76,25 +73,12 @@ export default class ChatScreen extends Component {
         }
     }
 
-    //  function is use to get chats from firestore
-    getChatdataAftersend = () => {
-        firebaseSvc.fetchMessages(this.props.route.params.fid, this.props.route.params.uid).then((solve) => {
-            const data = orderBy(solve, ['timestamp'], ['asc'])
-            this.setState({ chatData: data })
-        }).then(() => {
-            let data = this.state.chatData
-        }).catch((fail) => {
-            console.log(fail)
-        })
-    }
-
     // send message function to store sent message to firebase 
     onSend = () => {
         this.textInput.clear()
-        firebaseSvc.send(
-            this.state.f_id,
-            this.state.f_name,
-            this.state.f_photo ? this.state.f_photo : null,
+        firebaseSvc.sendGroupmsg(
+            this.state.group_id,
+            this.state.group_name,
             this.state.text,
             this.state.u_id,
             this.state.u_name,
@@ -112,65 +96,65 @@ export default class ChatScreen extends Component {
 
     render() {
         let chats = this.state.chatData.map((c_data, i) => {
-            if (this.state.f_id == c_data.from_id && this.state.u_id == c_data.user_id || this.state.f_id == c_data.user_id && this.state.u_id == c_data.from_id) {
-                if (c_data.from_id == this.state.f_id) {
-                    return (
-                        <View style={{
-                            flexDirection: "row-reverse", margin: 5,
-                        }} key={i}>
-                            {this.state.u_photo ?
-                                <Avatar.Image
-                                    source={{
-                                        uri: this.state.u_photo
-                                    }}
-                                    size={55}
-                                    style={{ alignSelf: "center" }}
-                                />
-                                :
-                                <Avatar.Image
-                                    source={{
-                                        uri: 'https://www.whatsappprofiledpimages.com/wp-content/uploads/2018/11/whatsapp-profile-iopic-lif-300x300.gif'
-                                    }}
-                                    size={55}
-                                    style={{ alignSelf: "center" }}
-                                />
-                            }
-                            <View style={[styles.triangle, styles.arrowRight]} />
-                            <View style={styles.rightBox}>
-                                <Text style={{ fontSize: 16, color: "#000" }}> {c_data.text}</Text>
-                                <Text style={styles.time}> {this.convertDateTime(c_data.created_at)}</Text>
-                            </View>
+            if (c_data.user_id == this.state.u_id) {
+                return (
+                    <View style={{
+                        flexDirection: "row-reverse", margin: 5,
+                    }} key={i}>
+                        {this.state.u_photo ?
+                            <Avatar.Image
+                                source={{
+                                    uri: this.state.u_photo
+                                }}
+                                size={55}
+                                style={{ alignSelf: "center" }}
+                            />
+                            :
+                            <Avatar.Image
+                                source={{
+                                    uri: 'https://www.whatsappprofiledpimages.com/wp-content/uploads/2018/11/whatsapp-profile-iopic-lif-300x300.gif'
+                                }}
+                                size={55}
+                                style={{ alignSelf: "center" }}
+                            />
+                        }
+                        <View style={[styles.triangle, styles.arrowRight]} />
+                        <View style={styles.rightBox}>
+                            <Text style={{ fontSize: 12, color: "gray", fontWeight: "bold",textTransform:"capitalize" }}> {c_data.user_name}</Text>
+                            <Text style={{ fontSize: 16, color: "#000" }}> {c_data.group_message}</Text>
+                            <Text style={styles.time}> {this.convertDateTime(c_data.timestamp)}</Text>
                         </View>
-                    )
-                } else if (c_data.user_id !== this.state.uid) {
-                    return (
-                        <View style={{ flexDirection: "row", margin: 5 }} key={i}>
-                            {this.state.f_photo ?
-                                <Avatar.Image
-                                    source={{
-                                        uri: this.state.f_photo
-                                    }}
-                                    size={55}
-                                    style={{ alignSelf: "center" }}
-                                />
-                                :
-                                <Avatar.Image
-                                    source={{
-                                        uri: 'https://www.whatsappprofiledpimages.com/wp-content/uploads/2018/11/whatsapp-profile-iopic-lif-300x300.gif'
-                                    }}
-                                    size={55}
-                                    style={{ alignSelf: "center" }}
-                                />
-                            }
-                            <View style={[styles.triangle, styles.arrowLeft]} />
+                    </View>
+                )
+            } else {
+                return (
+                    <View style={{ flexDirection: "row", margin: 5 }} key={i}>
+                        {this.state.f_photo ?
+                            <Avatar.Image
+                                source={{
+                                    uri: this.state.f_photo
+                                }}
+                                size={55}
+                                style={{ alignSelf: "center" }}
+                            />
+                            :
+                            <Avatar.Image
+                                source={{
+                                    uri: 'https://www.whatsappprofiledpimages.com/wp-content/uploads/2018/11/whatsapp-profile-iopic-lif-300x300.gif'
+                                }}
+                                size={55}
+                                style={{ alignSelf: "center" }}
+                            />
+                        }
+                        <View style={[styles.triangle, styles.arrowLeft]} />
 
-                            <View style={styles.leftBox}>
-                                <Text style={{ fontSize: 16, color: "#000" }}> {c_data.text} </Text>
-                                <Text style={styles.time}> {this.convertDateTime(c_data.created_at)}</Text>
-                            </View>
+                        <View style={styles.leftBox}>
+                            <Text style={{ fontSize: 12, color: "blue", fontWeight: "bold",textTransform:"capitalize" }}> {c_data.user_name}</Text>
+                            <Text style={{ fontSize: 16, color: "#000" }}> {c_data.group_message} </Text>
+                            <Text style={styles.time}> {this.convertDateTime(c_data.timestamp)}</Text>
                         </View>
-                    )
-                }
+                    </View>
+                )
             }
         })
 
@@ -189,8 +173,11 @@ export default class ChatScreen extends Component {
                             style={{ margin: 10, fontWeight: 'bold' }}
                         />
                     </TouchableOpacity>
-                    <Text style={{ marginLeft: 20, margin: 10, fontSize: 20, fontWeight: 'bold', color: '#fff', textTransform: "capitalize", alignSelf: "center" }}>{this.state.f_name}</Text>
-                </View >
+                    <Text style={{ marginLeft: 20, margin: 10, fontSize: 20, fontWeight: 'bold', color: '#fff', textTransform: "capitalize", alignSelf: "center" }}>{this.state.group_name}</Text>
+                </View>
+                <View style={{ padding: 10, backgroundColor: 'rgba(0, 0, 0, 0.2)', flexDirection: 'row', alignSelf: "center", maxWidthwidth: 400, margin: 10, borderRadius: 20 }}>
+                    <Text>Welcome to {this.state.group_name}</Text>
+                </View>
                 <View style={{
                     height: screenHeight - 150,
                     marginVertical: 20,

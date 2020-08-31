@@ -74,7 +74,7 @@ export default class ContactScreen extends Component {
             <View style={styles.item}>
                 {
                     item.uid !== this.state.uid &&
-                    <TouchableOpacity onPress={() => this.props.navigation.navigate('Chat', {
+                    <TouchableOpacity onPress={() => this.props.navigation.navigate('chat', {
                         uid: this.state.uid,
                         uname: this.state.uname,
                         uphoto: this.state.uphoto,

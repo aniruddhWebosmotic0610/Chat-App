@@ -38,7 +38,7 @@ class FirebaseSvc {
     let all = []
     return new Promise((resolve, reject) => {
       var docRef = firebase.firestore().collection("chatie_user")
-      docRef.get().then(function (querySnapshot) {
+      docRef.orderBy('name', 'asc').get().then(function (querySnapshot) {
         querySnapshot.forEach(function (doc) {
           all.push(doc.data())
         }, resolve(all))
@@ -99,7 +99,7 @@ class FirebaseSvc {
 
   // to store message input to firestore 
   send = async (fid, fname, fphoto, text, uid, uname, uphoto) => {
-     const ref = await database().ref('/chat_messages')
+    const ref = await database().ref('/chat_messages')
     ref.child(fid).child(uid).push({
       user_id: uid,
       user_name: uname,
@@ -141,7 +141,67 @@ class FirebaseSvc {
     })
   }
 
+  //send group message by user
+  sendGroupmsg = async (grp_id, grp_name, text, uid, uname, uphoto) => {
+    const gref = await database().ref('/group_messages')
+    gref.child(grp_id).push({
+      user_id: uid,
+      user_name: uname,
+      u_photo: uphoto,
+      group_id: grp_id,
+      group_name: grp_name,
+      group_message: text,
+      timestamp: firebase.database.ServerValue.TIMESTAMP
+    }).then(() => {
+      const gDetail = database().ref('/group_details')
+      gDetail.child(grp_id).child('recent_message').set({
+        user_id: uid,
+        user_name: uname,
+        u_photo: uphoto,
+        group_id: grp_id,
+        group_name: grp_name,
+        group_message: text,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      })
+    })
+
+  }
+
+  addGroupDetails = (grpName, members, user) => {
+    return new Promise((resolve) => {
+      const ref = database().ref('/group_details').push({
+        name: grpName,
+        admin_name: user.uname,
+        admin_id: user.uid,
+        created_at: firebase.database.ServerValue.TIMESTAMP,
+        members: members,
+        recent_message: {
+          group_name: grpName,
+          group_message: "Welcome to " + grpName,
+          timestamp: firebase.database.ServerValue.TIMESTAMP
+        }
+      }).then((res) => {
+        console.log("members", members);
+        for (const key in members) {
+          const userRef = database().ref('/users_group').child(members[key].uid).push({
+            group_id: res.key,
+            group_name: grpName,
+            created_at: firebase.database.ServerValue.TIMESTAMP
+          })
+        }
+        resolve(true)
+      })
+    })
+  }
+  refOff = () => {
+    // database().ref('/group_details').off();
+    database().ref('/users_group').off();
+    return;
+  }
 }
+
+
+
 
 const firebaseSvc = new FirebaseSvc();
 export default firebaseSvc;

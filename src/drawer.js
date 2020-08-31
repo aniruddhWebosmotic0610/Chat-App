@@ -41,7 +41,7 @@ export function DrawerNavigator({ navigation, route }) {
   return (
     <Drawer.Navigator initialRouteName="Home" drawerContent={(props) => <DrawerContent  {...props} />}>
       <Drawer.Screen name="Home" component={HomeView} title="Home" />
-      <Drawer.Screen name="contacts" component={ContactScreen} />
+      <Drawer.Screen name="Contacts" component={ContactScreen} title="Contacts" />
     </Drawer.Navigator >
   )
 }

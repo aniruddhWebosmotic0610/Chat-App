@@ -90,16 +90,17 @@ export function DrawerContent(props, route) {
                         <DrawerItem
                             icon={() => (
                                 <Icon
-                                    name="account-group"
+                                    name="account"
                                     color={'black'}
                                     size={20}
                                 />
                             )}
                             label="Contacts"
-                            onPress={() => { props.navigation.navigate('contacts') }}
+                            onPress={() => { props.navigation.navigate('Contacts') }}
                             labelStyle={{ color: 'black', fontWeight: "bold" }}
                         />
                     </Drawer.Section>
+
                 </View>
             </DrawerContentScrollView>
             <Drawer.Section style={styles.bottomDrawerSection}>

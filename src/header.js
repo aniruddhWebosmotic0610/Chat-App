@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useEffect } from 'react';
 
 import { navigationOptions } from '@react-navigation/drawer'
@@ -12,12 +8,13 @@ import {
     TouchableOpacity
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-export const Header = ({ title }) => {
+export const Header = ({ title, add }) => {
     const navigation = useNavigation();
     return (
         <View style={{ backgroundColor: '#007AFF', height: 55, width: "100%", flexDirection: 'row' }}>
-            <TouchableOpacity
+            <TouchableOpacity style={{ alignSelf: "center" }}
                 onPress={() => navigation.toggleDrawer()}
             >
                 <Image
@@ -25,7 +22,16 @@ export const Header = ({ title }) => {
                     source={require('../Assets/menu.png')}
                 />
             </TouchableOpacity>
-            <Text style={{ marginLeft: 20, margin: 10, fontSize: 20, fontWeight: 'bold', color: '#fff', textTransform: "capitalize" }}>{title}</Text>
+            <Text style={{ marginLeft: 20, margin: 10, fontSize: 20, fontWeight: 'bold', color: '#fff', textTransform: "capitalize", flex: 1, alignSelf: "center" }}>{title}</Text>
+            {add &&
+                <TouchableOpacity style={{ alignSelf: "center", marginRight: 10 }} onPress={()=>navigation.navigate('add-group')}>
+                    <Icon
+                        name="plus-circle"
+                        color={'#fff'}
+                        size={30}
+                    />
+                </TouchableOpacity>
+            }
         </View>
     );
 }
