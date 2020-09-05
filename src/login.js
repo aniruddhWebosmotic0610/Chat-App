@@ -1,14 +1,11 @@
-import React, { Component, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
   SafeAreaView,
   Text,
-  Alert,
   TouchableOpacity,
-  ScrollView,
   TextInput,
-  AsyncStorage
 } from 'react-native';
 import Styles from './styles/styles';
 
@@ -17,7 +14,6 @@ var FBLoginButton = require('./fbLoginButton');
 
 import { GoogleSignin, GoogleSigninButton, statusCodes } from 'react-native-google-signin';
 import auth from '@react-native-firebase/auth';
-import firebase from '@react-native-firebase/app';
 import firestore from '@react-native-firebase/firestore'
 import { ActivityIndicator } from 'react-native-paper';
 import firebaseSvc from './firebaseSDK';
@@ -213,7 +209,7 @@ const style = StyleSheet.create({
     backgroundColor: "#007AFF",
     padding: 10,
     width: 250,
-    elevation:5,
+    elevation: 5,
     borderRadius: 50,
     color: '#fff',
     alignSelf: 'center',

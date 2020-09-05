@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
-import { LoginButton, LoginManager } from 'react-native-fbsdk';
+import { LoginManager } from 'react-native-fbsdk';
 
 export default class FBLoginButton extends Component {
 
@@ -20,7 +20,7 @@ export default class FBLoginButton extends Component {
   }
   render() {
     return (
-      <View style={{width:250}}>
+      <View style={{ width: 250 }}>
         <TouchableOpacity style={style.btn} onPress={this.handleFacebookLogin}>
           <Text style={style.TextStyle}>Login with Facebook </Text>
         </TouchableOpacity>
@@ -35,7 +35,7 @@ const style = StyleSheet.create({
     borderRadius: 30,
     paddingTop: 10,
     paddingBottom: 10,
-    elevation:5,
+    elevation: 5,
     paddingLeft: 20,
     paddingRight: 20
 

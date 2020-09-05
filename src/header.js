@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
-import { navigationOptions } from '@react-navigation/drawer'
 import {
     Text,
     View,
@@ -24,7 +23,7 @@ export const Header = ({ title, add }) => {
             </TouchableOpacity>
             <Text style={{ marginLeft: 20, margin: 10, fontSize: 20, fontWeight: 'bold', color: '#fff', textTransform: "capitalize", flex: 1, alignSelf: "center" }}>{title}</Text>
             {add &&
-                <TouchableOpacity style={{ alignSelf: "center", marginRight: 10 }} onPress={()=>navigation.navigate('add-group')}>
+                <TouchableOpacity style={{ alignSelf: "center", marginRight: 10 }} onPress={() => navigation.navigate('add-group')}>
                     <Icon
                         name="plus-circle"
                         color={'#fff'}

@@ -11,6 +11,7 @@ export default StyleSheet.create({
         position: 'absolute',
         backgroundColor: 'rgba(0,0,0, 0.2)',
         zIndex: 999,
+        elevation:2
     },
     container: {
         flex: 1,

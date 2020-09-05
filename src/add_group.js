@@ -31,7 +31,6 @@ export default function AddgroupScreen({ navigation }) {
         fetchData();
     }, [])
 
-
     // retrive current user data from firebase using auth 
     async function retrieveData() {
         setLoading(true)
@@ -58,7 +57,6 @@ export default function AddgroupScreen({ navigation }) {
             // console.log('not getting data')
         })
     }
-
     //search functionality for userlist
     function searchUser(search) {
         setSearch(search)
@@ -72,11 +70,6 @@ export default function AddgroupScreen({ navigation }) {
             setUserlist(data)
         }
     }
-
-    function clearSearch() {
-        console.log("clear");
-    }
-
     //add user to group and remove it from UserList
     function addUser(user, index) {
         setSearch("")
@@ -94,6 +87,7 @@ export default function AddgroupScreen({ navigation }) {
         setUsersGroup(temUsers)
     }
 
+    //removing added user from group
     function removeAddedUser(u_data) {
         let add_Data = addedUsers;
         const data = addedUsers.filter((item) => {
@@ -128,10 +122,12 @@ export default function AddgroupScreen({ navigation }) {
             curentUser.push(user)
             const members = [...addedUsers, ...curentUser]
             firebaseSvc.addGroupDetails(group_name, members, userInfo).then((response) => {
-                console.log('response', response);
                 setGroupname("");
-                // firebaseSvc.refOff()
-                navigation.goBack();
+                setLoading(true)
+                setTimeout(() => {
+                    setLoading(false)
+                    navigation.goBack();
+                }, 2000);
             })
 
         }
@@ -257,7 +253,7 @@ export default function AddgroupScreen({ navigation }) {
                         </ScrollView>
                     }
                     <View style={{ marginTop: 15 }}>
-                        <Searchbar placeholder="Type here..." onChangeText={searchUser} style={style.searchInput} clea={clearSearch}
+                        <Searchbar placeholder="Type here..." onChangeText={searchUser} style={style.searchInput}
                             value={searchText} />
                         <View>
                             {renderUser}

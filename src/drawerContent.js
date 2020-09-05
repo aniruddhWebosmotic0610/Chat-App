@@ -1,27 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Alert, AsyncStorage } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 import {
-    useTheme,
     Avatar,
     Title,
     Caption,
-    Paragraph,
     Drawer,
-    Text,
-    TouchableRipple,
-    Switch
 } from 'react-native-paper';
-import {
-    DrawerContentScrollView,
-    DrawerItem
-} from '@react-navigation/drawer';
-
+import AsyncStorage from '@react-native-community/async-storage';
+import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-
 import firebase from '@react-native-firebase/app'
 
 
-// import{ AuthContext } from '../components/context';
 
 export function DrawerContent(props, route) {
 
@@ -115,7 +105,6 @@ export function DrawerContent(props, route) {
                     label="Sign Out"
                     onPress={() => {
                         firebase.auth().signOut().then(function () {
-                            // console.log("Sign-out successful.");
                             props.navigation.navigate("login")
                         }).catch(function (error) {
                             // console.log("An error happened when signing out");

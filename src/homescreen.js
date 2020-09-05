@@ -1,4 +1,4 @@
-import React, { Component, useEffect, useState } from 'react';
+import React, { Component, useEffect, useState, useRef } from 'react';
 
 import {
     Text,
@@ -15,41 +15,39 @@ import {
     Avatar, ActivityIndicator
 } from 'react-native-paper';
 import Styles from './styles/styles';
+import CardView from 'react-native-cardview'
 
 
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
 import { Header } from './header';
-import database from '@react-native-firebase/database'
 import auth from '@react-native-firebase/auth'
 import firebaseSvc from './firebaseSDK';
-import _, { orderBy } from 'lodash'
+import _, { orderBy, uniqBy } from 'lodash'
 import moment from 'moment';
-import { useIsFocused } from '@react-navigation/native';
+import firestore from '@react-native-firebase/firestore';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 
-const screenWidth = Math.round(Dimensions.get('window').width);
-const screenHeight = Math.round(Dimensions.get('window').height);
 
 export default function HomeView({ props, navigation }) {
     const [isLoading, setLoading] = useState(false);
     const [userInfo, setUser] = useState();
     const [userList, setUserlist] = useState([]);
-    const [chatUserlist, setChatlist] = useState([]);
-    const [chatGrouplist, setGrpChatlist] = useState([]);
     const [combinedChatlist, setCombineChatlist] = useState([]);
-    const isFocused = useIsFocused();
 
     useEffect(() => {
-        fetchData();
-    }, [isFocused])
-
-    async function fetchData() {
-        const user = await retrieveData();
-        const userlist = await user_data();
-        const chat = await getChatdata(user.uid, userlist);
-        const groupchat = await getGroupChat(user.uid);
-    }
+        let isRendered = true
+        async function fetchData() {
+            const user = await retrieveData();
+            const userlist = await user_data();
+            const chat = await getChatdata(user.uid, userlist)
+        }
+        fetchData()
+        return () => {
+            isRendered = false
+        }
+    }, [navigation])
 
     // retrive current user data from firebase using auth 
     function retrieveData() {
@@ -81,91 +79,43 @@ export default function HomeView({ props, navigation }) {
     }
 
     //get User list of this user's had chat with latest chat user comes top
-    async function getChatdata(uid, userData) {
-        // return new Promise((resolve) => {
-        if (uid && userData) {
-            const ref = await database().ref('/chat_messages')
-            ref.child(uid).on('value', (snapshot) => {
-                let data = []
-                let temp = snapshot.val();
-                for (let tempkey in temp) {
-                    if (temp[tempkey]['recent_message']) {
-                        data.push(temp[tempkey]['recent_message']);
-                    }
-                    setChatlist(data)
+    function getChatdata(uid, userData) {
+        return new Promise(async (resolve) => {
+            if (uid && userData) {
+                const ref = await firestore().collection('chatie_user')
+                ref.doc(uid).collection('recent_message').onSnapshot((snapshot) => {
+                    var data = [];
+                    snapshot.forEach(function (doc) {
+                        data.push(doc.data());
+                    });
+                    let tdata = orderBy(data, ["timestamp"], ['desc'])
+                    setCombineChatlist(tdata)
                     setLoading(false)
-
-                }
-            })
-
-            // return tdata
-        }
-        // })
+                    resolve(tdata)
+                    // dispatchMessages({ type: 'add', payload: snapshot.docs });
+                },
+                    error => {
+                        console.error('getMessages error', error);
+                    },
+                );
+            }
+        })
     }
 
-    // get recent groupChat
-    function getGroupChat(uid) {
-        console.log('uid', uid);
-        return new Promise((resolve) => {
-            let gData = [];
-            const gRef = database().ref('/users_group')
-            gRef.child(uid).on('value', (snapshot) => {
-                const grp = snapshot.val();
-                console.log('grp', grp);
-                if (grp) {
-                    for (let key in grp) {
-                        const grp_id = grp[key].group_id;
-                        console.log(grp_id);
-                        const detailRef = database().ref('/group_details').child(grp_id)
-                        detailRef.on('value', (snapshot) => {
-                            const grp_val = snapshot.val();
-                            if (grp_val['recent_message']) {
-                                let grpObj = { ...grp_val['recent_message'], ...{ "group_id": grp_id } }
-                                gData.push(grpObj)
-                            }
-                            setGrpChatlist(gData);
-                        })
-                    }
-
-                    if (chatGrouplist.length > 0 || chatUserlist.length > 0) {
-                        let combineData = [];
-                        console.log('userChat', chatUserlist);
-                        console.log('grpChat', chatGrouplist);
-                        combineData = [...chatGrouplist, ...chatUserlist];
-                        let tdata = orderBy(combineData, ["timestamp"], ['desc'])
-                        setCombineChatlist(tdata)
-                        setLoading(false)
-                        resolve(combineData)
-                    }
-                }
-                else {
-                    if (chatGrouplist.length > 0 || chatUserlist.length > 0) {
-                        let combineData = [];
-                        console.log('userChat', chatUserlist);
-                        console.log('grpChat', chatGrouplist);
-                        combineData = [...chatGrouplist, ...chatUserlist];
-                        let tdata = orderBy(combineData, ["timestamp"], ['desc'])
-                        setCombineChatlist(tdata)
-                        setLoading(false)
-                        resolve(combineData)
-                    }
-                }
-
-            })
-            // gRef.child(uid).off()
-
-
-        })
+    function addGroup() {
+        navigation.navigate('add-group')
     }
 
     // date convert to DD-MMM H:mm A from seaconds
     function convertDateTime(given_seconds) {
         return moment(given_seconds * 1000).format('hh:mm A');
     }
+
+    //View of horizontal userlist 
     const User = userList.map((u_data, i) => {
         if (u_data.uid !== userInfo.uid) {
             return (
-                <View style={styles.container} key={u_data.uid}>
+                <View style={styles.container} key={u_data.uid.toString()}>
                     <TouchableOpacity onPress={() => navigation.navigate('chat', {
                         uid: userInfo.uid,
                         uname: userInfo.uname,
@@ -202,18 +152,21 @@ export default function HomeView({ props, navigation }) {
         }
     })
 
+    //render Flatlist of recent chats
     const renderItem = ({ item, index }) => (
-        <View key={index}>
+        <View key={String(index)}>
             <View style={styles.item}>
-                {item.text ?
-                    <TouchableOpacity onPress={() => navigation.navigate('chat', {
-                        uid: userInfo.uid,
-                        uname: userInfo.uname,
-                        uphoto: userInfo.uphoto,
-                        fid: item.from_id,
-                        fname: item.from_name,
-                        fphoto: item.f_photo
-                    })}>
+                {item && (item.text || item.image) &&
+                    <TouchableOpacity onPress={() => {
+                        navigation.navigate('chat', {
+                            uid: userInfo.uid,
+                            uname: userInfo.uname,
+                            uphoto: userInfo.uphoto,
+                            fid: item.from_id,
+                            fname: item.from_name,
+                            fphoto: item.f_photo
+                        })
+                    }}>
 
                         <View style={styles.list_container}>
                             <View style={{ justifyContent: "center", marginRight: 10 }}>
@@ -244,20 +197,46 @@ export default function HomeView({ props, navigation }) {
                                     {item.from_name}
                                 </Text>
                                 <View style={{ flexDirection: "row" }} >
-                                    <Text numberOfLines={1} style={styles.text}> {item.text}</Text>
-                                    <Text style={styles.time}> {convertDateTime(item.timestamp)}</Text>
+                                    <View style={{ flex: 1, flexDirection: "row" }}>
+                                        {item.image &&
+                                            <View style={{ flexDirection: 'row' }}>
+
+                                                <Icon
+                                                    name="camera"
+                                                    color={'gray'}
+                                                    size={20}
+
+                                                />
+                                                <Text numberOfLines={1} style={styles.text}>
+                                                    Image!!</Text>
+                                            </View>
+
+                                        }
+                                        {item.text !== "" &&
+                                            <View style={{ flex: 1, flexDirection: "row" }}>
+                                                < Text numberOfLines={1} style={styles.text}> {item.text}</Text>
+                                            </View>
+                                        }
+                                    </View>
+
+                                    <View>
+                                        <Text style={styles.time}> {convertDateTime(item.timestamp)}</Text>
+                                    </View>
                                 </View>
                             </View>
                         </View>
                     </TouchableOpacity>
-                    :
-                    <TouchableOpacity onPress={() => navigation.navigate('groupChat', {
-                        uid: userInfo.uid,
-                        uname: userInfo.uname,
-                        uphoto: userInfo.uphoto,
-                        group_id: item.group_id,
-                        group_name: item.group_name
-                    })}           >
+                }
+                {item && (item.group_message || item.group_image) &&
+                    <TouchableOpacity onPress={() => {
+                        navigation.navigate('groupChat', {
+                            uid: userInfo.uid,
+                            uname: userInfo.uname,
+                            uphoto: userInfo.uphoto,
+                            group_id: item.group_id,
+                            group_name: item.group_name
+                        })
+                    }}           >
                         <View style={styles.list_container}>
                             <View style={{ justifyContent: "center", marginRight: 10 }}>
                                 <Avatar.Image
@@ -278,8 +257,31 @@ export default function HomeView({ props, navigation }) {
                                     {item.group_name}
                                 </Text>
                                 <View style={{ flexDirection: "row" }} >
-                                    <Text numberOfLines={1} style={styles.text}> {item.group_message}</Text>
-                                    <Text style={styles.time}> {convertDateTime(item.timestamp)}</Text>
+                                    <View style={{ flex: 1, flexDirection: "row" }}>
+                                        {item.group_image &&
+                                            <View style={{ flexDirection: 'row' }}>
+
+                                                <Icon
+                                                    name="camera"
+                                                    color={'gray'}
+                                                    size={20}
+
+                                                />
+                                                <Text numberOfLines={1} style={styles.text}>
+                                                    Image!!</Text>
+                                            </View>
+
+                                        }
+                                        {item.group_message !== "" &&
+                                            <View style={{ flex: 1, flexDirection: "row" }}>
+                                                < Text numberOfLines={1} style={styles.text}> {item.group_message}</Text>
+                                            </View>
+                                        }
+                                    </View>
+
+                                    <View>
+                                        <Text style={styles.time}> {convertDateTime(item.timestamp)}</Text>
+                                    </View>
                                 </View>
                             </View>
                         </View>
@@ -293,30 +295,28 @@ export default function HomeView({ props, navigation }) {
     return (
 
         <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFAFA" }}>
-            <Header title={"Home"} />
-            {isLoading ?
+            {isLoading &&
                 <ActivityIndicator animating={true} style={Styles.loader} />
-                :
-                <View>
-                    <ScrollView horizontal={true} style={{ backgroundColor: "#fff" }}>
-                        {User}
-                    </ScrollView>
-                    <View style={{ flexDirection: "row-reverse", padding: 10, elevation: 5, backgroundColor: "#fff" }}>
-                        <TouchableOpacity onPress={() => navigation.navigate('add-group')}><Text style={{ color: "#007AFF", fontSize: 16 }}> + New Group</Text></TouchableOpacity>
-                    </View>
-                    <FlatList
-                        data={combinedChatlist}
-                        renderItem={renderItem}
-                        style={{ backgroundColor: "#FFFAFA" }}
-                        keyExtractor={(item, index) => index}
-                        contentContainerStyle={{
-                            paddingBottom: 200,
-                        }} />
-                </View>
             }
+            <View>
+                <Header title={"Home"} />
+                <ScrollView horizontal={true} style={{ backgroundColor: "#fff" }}>
+                    {User}
+                </ScrollView>
+                <CardView cardElevation={2} style={{ flexDirection: "row-reverse", padding: 10, backgroundColor: "#fff" }}>
+                    <TouchableOpacity onPress={() => addGroup()}><Text style={{ color: "#007AFF", fontSize: 16 }}> + New Group</Text></TouchableOpacity>
+                </CardView>
+                <FlatList
+                    data={combinedChatlist}
+                    renderItem={renderItem}
+                    style={{ backgroundColor: "#FFFAFA" }}
+                    keyExtractor={(item, index) => index.toString()}
+                    contentContainerStyle={{
+                        paddingBottom: 220,
+                    }} />
+            </View>
         </SafeAreaView>
     )
-
 }
 
 const styles = StyleSheet.create({
@@ -335,7 +335,6 @@ const styles = StyleSheet.create({
     text: {
         color: '#808080',
         fontSize: 14,
-        flex: 1
     },
     time: {
         color: '#808080',

@@ -1,30 +1,16 @@
-import React, { Component, useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   createDrawerNavigator
 } from '@react-navigation/drawer';
-
 import HomeView from './homescreen';
-
-
 import { DrawerContent } from './drawerContent';
-import { AsyncStorage } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 import ContactScreen from './contacts';
-
-
-
-// const CustomDrawerComponent = (props) => (
-//     <SafeAreaView>
-//         <ScrollView>
-//             <DrawerItems {...props} />
-//         </ScrollView>
-//     </SafeAreaView>
-// )
 
 const Drawer = createDrawerNavigator();
 
 export function DrawerNavigator({ navigation, route }) {
 
-  const [userInfo, setUser] = useState();
   // console.log(route);
   useEffect(() => {
     const userInfo = route.params.user
@@ -32,9 +18,7 @@ export function DrawerNavigator({ navigation, route }) {
   })
   const saveData = async (data) => {
     var userData = JSON.parse(data);
-    // setUser(userData)
     await AsyncStorage.setItem('user', JSON.stringify(userData));
-    // XXX: Removed state logic, call it somewhere else.
   };
 
 

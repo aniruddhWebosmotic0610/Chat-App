@@ -14,6 +14,7 @@ import com.facebook.reactnative.androidsdk.FBSDKPackage;
 import co.apptailor.googlesignin.RNGoogleSigninPackage; 
 import com.oblador.vectoricons.VectorIconsPackage;
 import org.devio.rn.splashscreen.SplashScreenReactPackage;
+import com.kishanjvaghela.cardview.RNCardViewPackage;
 
 
 

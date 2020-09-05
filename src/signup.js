@@ -14,16 +14,11 @@ import {
 } from 'react-native';
 
 import Styles from './styles/styles';
-
-import { useForm, Controller } from "react-hook-form";
-
 import auth from '@react-native-firebase/auth';
-import firebase from '@react-native-firebase/app'
 import firestore from '@react-native-firebase/firestore'
 import storage from '@react-native-firebase/storage';
 import { ActivityIndicator } from 'react-native-paper';
 import ImagePicker from 'react-native-image-picker';
-
 import RNFetchBlob from 'rn-fetch-blob'
 import firebaseSvc from './firebaseSDK';
 

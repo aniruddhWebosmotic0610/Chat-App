@@ -60,29 +60,6 @@ class FirebaseSvc {
   }
 
 
-
-  refOn = () => {
-    return new Promise((resolve, reject) => {
-      let cData = []
-      this.ref.on('child_added', function (snapshot) {
-        alert(JSON.stringify(snapshot))
-        const { timestamp: numberStamp, text, user, name, femail, fid } = snapshot.val();
-        const { key: id } = snapshot;
-        const { key: _id } = snapshot;
-        const timestamp = new Date(numberStamp);
-        const message = {
-          femail,
-          fid,
-          text,
-          timestamp,
-          user
-        };
-        cData.push(message)
-        resolve(cData)
-      })
-    })
-  }
-
   // for fetch messages from firestore
   fetchMessages = (fid, uid) => {
     let data = [];
@@ -90,113 +67,126 @@ class FirebaseSvc {
       var docRef = firebase.firestore().collection("chat_messages")
       docRef.get().then(function (querySnapshot) {
         querySnapshot.forEach(function (doc) {
-          // console.log(doc.id);
           data.push(doc.data())
         }, resolve(data))
       })
     })
   }
-
-  // to store message input to firestore 
-  send = async (fid, fname, fphoto, text, uid, uname, uphoto) => {
-    const ref = await database().ref('/chat_messages')
-    ref.child(fid).child(uid).push({
+  send = async (fid, fname, fphoto, text, imgUrl, uid, uname, uphoto) => {
+    const ref = await firestore().collection('chatie_user')
+    ref.doc(uid).collection('messages').add({
       user_id: uid,
       user_name: uname,
       from_id: fid,
       from_name: fname,
+      image: imgUrl ? imgUrl : null,
       text: text,
-      created_at: firebase.database.ServerValue.TIMESTAMP
+      created_at: new Date().getTime()
     }).then(() => {
-      ref.child(uid).child(fid).push({
+      ref.doc(fid).collection('messages').add({
         user_id: uid,
         user_name: uname,
         from_id: fid,
         from_name: fname,
+        image: imgUrl ? imgUrl : null,
         text: text,
-        created_at: firebase.database.ServerValue.TIMESTAMP
+        created_at: new Date().getTime()
       })
     }).then(() => {
-      ref.child(uid).child(fid).child('recent_message').set({
+      ref.doc(uid).collection('recent_message').doc(fid).set({
         user_id: uid,
         user_name: uname,
         u_photo: uphoto,
         from_id: fid,
         from_name: fname,
         f_photo: fphoto,
+        image: imgUrl ? imgUrl : null,
         text: text,
-        timestamp: firebase.database.ServerValue.TIMESTAMP
+        timestamp: new Date().getTime()
       })
     }).then(() => {
-      ref.child(fid).child(uid).child('recent_message').set({
+      ref.doc(fid).collection('recent_message').doc(uid).set({
         user_id: fid,
         user_name: fname,
         u_photo: fphoto,
         from_id: uid,
         from_name: uname,
         f_photo: uphoto,
+        image: imgUrl ? imgUrl : null,
         text: text,
-        timestamp: firebase.database.ServerValue.TIMESTAMP
+        timestamp: new Date().getTime()
       })
     })
   }
 
   //send group message by user
-  sendGroupmsg = async (grp_id, grp_name, text, uid, uname, uphoto) => {
-    const gref = await database().ref('/group_messages')
-    gref.child(grp_id).push({
+  sendGroupmsg = async (grp_id, grp_name, text, imgUrl, uid, uname, uphoto) => {
+    const ref = await firestore().collection('group_details').doc(grp_id)
+    ref.collection('group_message').add({
       user_id: uid,
       user_name: uname,
       u_photo: uphoto,
       group_id: grp_id,
       group_name: grp_name,
+      group_image: imgUrl ? imgUrl : null,
       group_message: text,
-      timestamp: firebase.database.ServerValue.TIMESTAMP
+      timestamp: new Date().getTime()
     }).then(() => {
-      const gDetail = database().ref('/group_details')
-      gDetail.child(grp_id).child('recent_message').set({
-        user_id: uid,
-        user_name: uname,
-        u_photo: uphoto,
-        group_id: grp_id,
-        group_name: grp_name,
-        group_message: text,
-        timestamp: firebase.database.ServerValue.TIMESTAMP
+      let members = []
+      ref.get().then(async function (doc) {
+        members = doc.data().members
+        for (const key in members) {
+          const userRef = await firestore().collection('chatie_user').doc(members[key].uid)
+          userRef.collection('recent_message').doc(grp_id).set({
+            user_id: uid,
+            user_name: uname,
+            u_photo: uphoto,
+            group_id: grp_id,
+            group_name: grp_name,
+            group_image: imgUrl ? imgUrl : null,
+            group_message: text,
+            timestamp: new Date().getTime()
+          })
+        }
       })
     })
-
   }
 
+  // add group details in firestore
   addGroupDetails = (grpName, members, user) => {
-    return new Promise((resolve) => {
-      const ref = database().ref('/group_details').push({
+    return new Promise(async (resolve) => {
+      const ref = await firestore().collection('group_details')
+      ref.add({
         name: grpName,
         admin_name: user.uname,
         admin_id: user.uid,
-        created_at: firebase.database.ServerValue.TIMESTAMP,
+        created_at: new Date().getTime(),
         members: members,
         recent_message: {
           group_name: grpName,
           group_message: "Welcome to " + grpName,
-          timestamp: firebase.database.ServerValue.TIMESTAMP
+          timestamp: new Date().getTime()
         }
-      }).then((res) => {
-        console.log("members", members);
+      }).then(async (res) => {
         for (const key in members) {
-          const userRef = database().ref('/users_group').child(members[key].uid).push({
-            group_id: res.key,
+          const userRef = await firestore().collection('chatie_user').doc(members[key].uid)
+          userRef.collection('groups').add({
+            group_id: res.id,
             group_name: grpName,
-            created_at: firebase.database.ServerValue.TIMESTAMP
+            created_at: new Date().getTime()
           })
+          userRef.collection('recent_message').doc(res.id).set({
+            user_id: user.uid,
+            user_name: user.uname,
+            group_id: res.id,
+            group_name: grpName,
+            group_message: "Welcome to " + grpName,
+            timestamp: new Date().getTime()
+          })
+          resolve(true)
         }
-        resolve(true)
       })
     })
-  }
-  refOff = () => {
-    // database().ref('/group_details').off();
-    database().ref('/users_group').off();
-    return;
   }
 }
 
